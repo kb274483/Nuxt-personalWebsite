@@ -1,0 +1,141 @@
+<template>
+  <div
+    v-show="!windowState.isMinimized"
+    ref="windowRef"
+    class="absolute flex flex-col bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-lg shadow-2xl overflow-hidden border border-white/30 dark:border-white/10 transition-shadow duration-200"
+    :style="{
+      left: `${x}px`,
+      top: `${y}px`,
+      width: `${width}px`,
+      height: `${height}px`,
+      zIndex: windowState.zIndex,
+    }"
+    :class="{ 'inset-0 !w-full !h-full !left-0 !top-8 rounded-none': windowState.isMaximized }"
+    @mousedown="focusWindow"
+  >
+
+    <div
+      ref="handleRef"
+      class="h-8 bg-gray-200/50 dark:bg-white/5 flex items-center px-3 space-x-2 cursor-default select-none border-b border-gray-300/30 dark:border-white/5 shrink-0"
+    >
+      <div class="flex space-x-2 group">
+        <button @click.stop="close" class="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center text-[8px] text-black/50 opacity-100 transition-colors">
+            <span class="hidden group-hover:block">x</span>
+        </button>
+        <button @click.stop="minimize" class="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600 flex items-center justify-center text-[8px] text-black/50 opacity-100 transition-colors">
+            <span class="hidden group-hover:block">-</span>
+        </button>
+        <button @click.stop="toggleMaximize" class="w-3 h-3 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center text-[8px] text-black/50 opacity-100 transition-colors">
+            <span class="hidden group-hover:block">+</span>
+        </button>
+      </div>
+      <div class="flex-1 text-center text-xs font-semibold text-gray-700 dark:text-gray-200 truncate px-2">{{ windowState.title }}</div>
+      <div class="w-14"></div>
+    </div>
+
+    <!-- Content -->
+    <div class="flex-1 overflow-auto relative bg-white/50 dark:bg-gray-900/50 text-gray-900 dark:text-gray-100">
+      <slot />
+    </div>
+
+
+    <div
+      v-if="!windowState.isMaximized"
+      class="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize z-50"
+      @mousedown.stop="startResize"
+    >
+      <svg viewBox="0 0 10 10" class="w-full h-full text-gray-400 opacity-50">
+        <path d="M6 9 L9 6 M3 9 L9 3" stroke="currentColor" stroke-width="1" />
+      </svg>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { useDraggable } from '@vueuse/core'
+import { useWindowManager, type WindowState } from '~/stores/windowManager'
+import { useBoundaryCheck } from '~/composables/useBoundaryCheck'
+
+const props = defineProps<{
+  windowState: WindowState
+}>()
+
+const store = useWindowManager()
+const windowRef = ref<HTMLElement | null>(null)
+const handleRef = ref<HTMLElement | null>(null)
+
+const x = ref(props.windowState.x)
+const y = ref(props.windowState.y)
+const width = ref(props.windowState.width)
+const height = ref(props.windowState.height)
+
+useDraggable(windowRef, {
+  initialValue: { x: props.windowState.x, y: props.windowState.y },
+  handle: handleRef,
+  onMove: (position) => {
+    if (props.windowState.isMaximized) return
+    const { x: newX, y: newY } = useBoundaryCheck().checkBoundary(position.x, position.y, width.value, height.value)
+
+    x.value = newX
+    y.value = newY
+  },
+  onEnd: (position) => {
+    if (props.windowState.isMaximized) return
+    const { x: newX, y: newY } = useBoundaryCheck().checkBoundary(position.x, position.y, width.value, height.value)
+
+    store.updateWindowPosition(props.windowState.id, newX, newY)
+  },
+  disabled: computed(() => props.windowState.isMaximized)
+})
+
+watch(() => props.windowState.x, (newX) => { if(!isResizing.value) x.value = newX })
+watch(() => props.windowState.y, (newY) => { if(!isResizing.value) y.value = newY })
+watch(() => props.windowState.width, (newW) => { if(!isResizing.value) width.value = newW })
+watch(() => props.windowState.height, (newH) => { if(!isResizing.value) height.value = newH })
+
+const focusWindow = () => {
+  store.focusWindow(props.windowState.id)
+}
+
+const close = () => {
+  store.closeWindow(props.windowState.id)
+}
+
+const minimize = () => {
+  store.toggleMinimize(props.windowState.id)
+}
+
+const toggleMaximize = () => {
+  store.toggleMaximize(props.windowState.id)
+}
+
+const isResizing = ref(false)
+const startResize = (e: MouseEvent) => {
+  isResizing.value = true
+  const startX = e.clientX
+  const startY = e.clientY
+  const startWidth = width.value
+  const startHeight = height.value
+
+  const onMouseMove = (e: MouseEvent) => {
+    const newWidth = Math.max(300, startWidth + (e.clientX - startX))
+    const newHeight = Math.max(200, startHeight + (e.clientY - startY))
+    
+    const maxWidth = window.innerWidth - x.value
+    const maxHeight = window.innerHeight - y.value
+    
+    width.value = Math.min(newWidth, maxWidth)
+    height.value = Math.min(newHeight, maxHeight)
+  }
+
+  const onMouseUp = () => {
+    isResizing.value = false
+    store.updateWindowSize(props.windowState.id, width.value, height.value)
+    window.removeEventListener('mousemove', onMouseMove)
+    window.removeEventListener('mouseup', onMouseUp)
+  }
+
+  window.addEventListener('mousemove', onMouseMove)
+  window.addEventListener('mouseup', onMouseUp)
+}
+</script>

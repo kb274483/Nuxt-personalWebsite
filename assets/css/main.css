@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --pointer-x: 50%;
+  --pointer-y: 50%;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+html::view-transition-new(root) {
+  animation: none;
+}
+html::view-transition-old(root) {
+  animation-duration: 500ms;
+  animation-name: bubble-out;
+}
+
+html.dark::view-transition-old(root) {
+  animation: none;
+}
+html.dark::view-transition-new(root) {
+  animation-duration: 500ms;
+  animation-name: bubble-in;
+}
+
+/* 泡泡動畫（in / out） */
+@keyframes bubble-in {
+  from {
+    clip-path: circle(0% at var(--pointer-x) var(--pointer-y));
+  }
+  to {
+    clip-path: circle(140% at var(--pointer-x) var(--pointer-y));
+  }
+}
+
+@keyframes bubble-out {
+  from {
+    z-index: 1000;
+    clip-path: circle(100% at var(--pointer-x) var(--pointer-y));
+  }
+  to {
+    z-index: 1000;
+    clip-path: circle(0% at var(--pointer-x) var(--pointer-y));
+  }
+}
