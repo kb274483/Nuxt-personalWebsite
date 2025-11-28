@@ -8,6 +8,7 @@
       height: `${height}px`,
     }"
     @dblclick="openApp(app.name)"
+    @contextmenu.stop.prevent
   >
     <button 
       class="group relative flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all duration-200 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/30 shadow-sm active:scale-95 hover:rotate-2 hover:scale-110"
