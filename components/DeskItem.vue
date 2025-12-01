@@ -1,14 +1,13 @@
 <template>
   <div 
     ref="deskItemRef"
-    class="absolute"
+    class="absolute desk-item"
     :style="{
       transform: `translate3d(${x}px, ${y}px, 0)`,
       width: `${width}px`,
       height: `${height}px`,
     }"
     @dblclick="openApp(app.name)"
-    @contextmenu.stop.prevent
   >
     <button 
       class="group relative flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all duration-200 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/30 shadow-sm active:scale-95 hover:rotate-2 hover:scale-110"
@@ -20,10 +19,11 @@
 </template>
 
 <script setup lang="ts">
+import { useTemplateRef } from 'vue'
 import { useWindowManager } from '~/stores/windowManager'
 import { useDesktopItemsManager } from '~/stores/desktopItemsManager'
 import { useDraggable } from '@vueuse/core'
-import type { AppItem, AppItemPosition } from '~/types/appItem'
+import type { AppItem, AppItemPosition } from '~/types/appItem.type'
 import { useBoundaryCheck } from '~/composables/useBoundaryCheck'
 
 const props = defineProps<{
@@ -31,7 +31,7 @@ const props = defineProps<{
 }>()
 
 const store = useWindowManager()
-const deskItemRef = ref<HTMLElement | null>(null)
+const deskItemRef = useTemplateRef<HTMLElement>('deskItemRef')
 
 const x = ref(props.app.x)
 const y = ref(props.app.y)

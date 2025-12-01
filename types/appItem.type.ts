@@ -1,7 +1,8 @@
 export type AppItem = {
   id: string,
-  name: string
-  icon: unknown
+  name: string,
+  icon: unknown,
+  disabled_delete?: boolean
 }
 
 export type AppItemPosition = {

@@ -1,8 +1,13 @@
 <template>
   <Desktop>
+    <Modal
+      v-if="showModal"
+      :modal="modalConfig"
+    />
     <RightClickMenu
       ref="rightClickMenuRef"
-      v-if="showRightClickMenu" 
+      v-if="showRightClickMenu"
+      :menu-items="currentMenuItems"
       :x="rightClickMenu.x" 
       :y="rightClickMenu.y" 
     />
@@ -32,16 +37,52 @@
 
 <script setup lang="ts">
 import { Code, Image, Settings, FileUser  } from 'lucide-vue-next'
-import { onMounted, onBeforeUnmount, computed, nextTick, ref } from 'vue'
+import { onMounted, onBeforeUnmount, computed, nextTick, ref, useTemplateRef } from 'vue'
 import { useWindowManager } from '~/stores/windowManager'
 import { useDesktopItemsManager } from '~/stores/desktopItemsManager'
+import Modal from '~/components/Modal.vue'
 import RightClickMenu from '~/components/apps/RightClickMenu.vue'
+import type { MenuItem } from '~/types/menu.type'
+import type { ModalConfig } from '~/types/modal.type'
+
+// 狀態新增：目前的選單內容
+const currentMenuItems = ref<MenuItem[]>([])
+
+const toggleModal = (show: boolean) => {
+  if (!document.startViewTransition) {
+    useModalManager().openModal(modalConfig.value)  
+    return
+  }
+  document.startViewTransition(() => {
+    showModal.value = show
+  })
+}
+
+// 定義不同的選單設定
+const desktopMenu: MenuItem[] = [
+  { label: 'New Folder', action: () => console.log('New Folder') },
+  { label: 'Change Wallpaper', action: () => console.log('Change Wallpaper') },
+]
+
+const appMenu: MenuItem[] = [
+  { label: 'Rename', action: () => console.log('Rename') },
+  { label: 'Delete', action: () => console.log('Delete') },
+]
+
+// Modal state
+const showModal = ref(false)
+const modalConfig = ref<ModalConfig>({
+  title: { label: 'Hello' },
+  message: { label: 'This is a modal' },
+  button: [
+    { label: 'Confirm', action: () => toggleModal(false) }
+  ]
+})
 
 const store = useWindowManager()
 const showRightClickMenu = ref(false)
 
-const rightClickMenuRef = ref<InstanceType<typeof RightClickMenu> | null>(null)
-
+const rightClickMenuRef = useTemplateRef<InstanceType<typeof RightClickMenu>>('rightClickMenuRef')
 const rightClickMenu = ref<{ x: number, y: number }>({ x: 0, y: 0 })
 
 const apps = computed(() => useDesktopItemsManager().desktopItems)
@@ -55,32 +96,39 @@ const resolveComponent = (name: string) => {
   }
 }
 
-const catchMouseRightClick = async (e: MouseEvent) => {
-  if (e.button === 2) {
-    e.preventDefault()
-    e.stopPropagation()
+const handleContextMenu = async (e: MouseEvent) => {
+  e.preventDefault()
+  let items = desktopMenu
+  
+  const target = e.target as HTMLElement
+  const deskItem = target.closest('.desk-item') // 請記得在 DeskItem.vue 加這個 class
+  
+  if (deskItem) {
+    items = appMenu
+  }
+  
+  // 設定內容並顯示
+  currentMenuItems.value = items
+  showRightClickMenu.value = true
+  rightClickMenu.value = { x: e.clientX, y: e.clientY }
+  
+  await nextTick()
+  
+  const menuEl = rightClickMenuRef.value?.$el as HTMLElement
+  if (menuEl && menuEl.getBoundingClientRect) {
+    const { width, height } = menuEl.getBoundingClientRect()
+    const { innerWidth, innerHeight } = window
     
-    showRightClickMenu.value = true
-    rightClickMenu.value = { x: e.clientX, y: e.clientY }
-    
-    await nextTick()
-    
-    const menuEl = rightClickMenuRef.value?.$el as HTMLElement
-    if (menuEl && menuEl.getBoundingClientRect) {
-      const { width, height } = menuEl.getBoundingClientRect()
-      const { innerWidth, innerHeight } = window
-      
-      let targetX = e.clientX
-      let targetY = e.clientY
-      if (targetX + width > innerWidth) {
-        targetX -= width
-      }
-      if (targetY + height > innerHeight) {
-        targetY -= height
-      }
-
-      rightClickMenu.value = { x: targetX, y: targetY }
+    let targetX = e.clientX
+    let targetY = e.clientY
+    if (targetX + width > innerWidth) {
+      targetX -= width
     }
+    if (targetY + height > innerHeight) {
+      targetY -= height
+    }
+
+    rightClickMenu.value = { x: targetX, y: targetY }
   }
 }
 
@@ -92,18 +140,18 @@ const closeRightClickMenu = () => {
 
 onMounted(() => {
   const appsDefault = [
-    { id: 'resume', name: 'Resume', icon: FileUser , x: 10, y: 20, width: 48, height: 48, zIndex: 1 },
-    { id: 'browser', name: 'Browser', icon: Code , x: 10, y: 100, width: 48, height: 48, zIndex: 1 },
-    { id: 'photos', name: 'Photos', icon: Image , x: 10, y: 180, width: 48, height: 48, zIndex: 1 },
-    { id: 'settings', name: 'Settings', icon: Settings , x: 10, y: 260, width: 48, height: 48, zIndex: 1 },
+    { id: 'resume', name: 'Resume', icon: FileUser, disabled_delete: true, x: 10, y: 20, width: 48, height: 48, zIndex: 1 },
+    { id: 'browser', name: 'Browser', icon: Code, disabled_delete: true, x: 10, y: 100, width: 48, height: 48, zIndex: 1 },
+    { id: 'photos', name: 'Photos', icon: Image, disabled_delete: true, x: 10, y: 180, width: 48, height: 48, zIndex: 1 },
+    { id: 'settings', name: 'Settings', icon: Settings, disabled_delete: true, x: 10, y: 260, width: 48, height: 48, zIndex: 1 },
   ]
   useDesktopItemsManager().setupDesktopItems(appsDefault)
-  window.addEventListener('contextmenu', catchMouseRightClick)
+  window.addEventListener('contextmenu', handleContextMenu)
   window.addEventListener('click', closeRightClickMenu)
 })
 
 onBeforeUnmount(() => {
-  window.removeEventListener('contextmenu', catchMouseRightClick)
+  window.removeEventListener('contextmenu', handleContextMenu)
   window.removeEventListener('click', closeRightClickMenu)
 })
 </script>

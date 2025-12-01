@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { AppItem, AppItemPosition } from '~/types/appItem'
+import type { AppItem, AppItemPosition } from '~/types/appItem.type'
 
 type DesktopItem = AppItem & AppItemPosition
 

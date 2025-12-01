@@ -52,6 +52,7 @@
 </template>
 
 <script setup lang="ts">
+import { useTemplateRef } from 'vue'
 import { useDraggable } from '@vueuse/core'
 import { useWindowManager, type WindowState } from '~/stores/windowManager'
 import { useBoundaryCheck } from '~/composables/useBoundaryCheck'
@@ -61,8 +62,8 @@ const props = defineProps<{
 }>()
 
 const store = useWindowManager()
-const windowRef = ref<HTMLElement | null>(null)
-const handleRef = ref<HTMLElement | null>(null)
+const windowRef = useTemplateRef<HTMLElement>('windowRef')
+const handleRef = useTemplateRef<HTMLElement>('handleRef')
 
 const x = ref(props.windowState.x)
 const y = ref(props.windowState.y)
