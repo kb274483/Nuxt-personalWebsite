@@ -6,6 +6,9 @@
           width: 'clamp(200px, 50vw, 500px)',
         }"
       >
+        <div class="flex justify-center items-center mb-4">
+          <component :is="props.modal.icon" class="w-10 h-10 text-gray-800 dark:text-white" />
+        </div>
         <h2 class="text-lg font-bold mb-4 text-center border-b border-gray-300/30 dark:border-white/10 pb-2 mx-4">
           {{ props.modal.title.label }}
         </h2>

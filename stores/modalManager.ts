@@ -5,7 +5,14 @@ import type { ModalConfig } from '~/types/modal.type'
 export const useModalManager = defineStore('modalManager', () => {
   const showModal = ref(false)
 
+  const modalConfig = ref<ModalConfig>({} as ModalConfig)
+  
+  const setModalConfig = (config: ModalConfig) => {
+    modalConfig.value = config
+  }
+
   const openModal = (modalConfig: ModalConfig) => {
+    setModalConfig(modalConfig)
     showModal.value = true
   }
 
@@ -16,6 +23,7 @@ export const useModalManager = defineStore('modalManager', () => {
   return {
     showModal,
     openModal,
-    closeModal
+    closeModal,
+    modalConfig
   }
 })

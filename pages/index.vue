@@ -2,7 +2,7 @@
   <Desktop>
     <Modal
       v-if="modalManager.showModal"
-      :modal="modalConfig"
+      :modal="modalManager.modalConfig"
     />
     <RightClickMenu
       ref="rightClickMenuRef"
@@ -39,12 +39,11 @@
 </template>
 
 <script setup lang="ts">
-import { Code, Image, Settings, FileUser, FileText  } from 'lucide-vue-next'
+import { Code, Image, Settings, FileUser, Trash2, CircleAlert } from 'lucide-vue-next'
 import { onMounted, onBeforeUnmount, computed, nextTick, ref, useTemplateRef } from 'vue'
 import { useWindowManager } from '~/stores/windowManager'
 import { useDesktopItemsManager } from '~/stores/desktopItemsManager'
 import type { MenuItem } from '~/types/menu.type'
-import type { ModalConfig } from '~/types/modal.type'
 import { useModalManager } from '~/stores/modalManager'
 import Modal from '~/components/Modal.vue'
 import RightClickMenu from '~/components/apps/RightClickMenu.vue'
@@ -73,25 +72,40 @@ const appMenu: MenuItem[] = [
   { label: 'Rename', action: () => {
     if(menuClickID.value){
       useDesktopItemsManager().setEditStatus(menuClickID.value, true)
+      menuClickID.value = null
     }
   }},
   { label: 'Delete', action: () => {
     if(menuClickID.value){
-      useDesktopItemsManager().removeDesktopItem(menuClickID.value)
+      const targetID = menuClickID.value
+      useModalManager().openModal({
+        title: { label: 'Delete' },
+        icon: Trash2,
+        message: { label: 'Are you sure you want to delete this file?' },
+        button: [
+          { label: 'Confirm', action: () =>{
+            useDesktopItemsManager().removeDesktopItem(targetID)
+            useModalManager().closeModal()
+          }},
+          { label: 'Cancel', action: () => useModalManager().closeModal() }
+        ]
+      })
       menuClickID.value = null
+      return
     }
+    useModalManager().openModal({
+      title: { label: 'Warning' },
+      icon: CircleAlert,
+      message: { label: 'This file is REALLY important! You cannot delete it.' },
+      button: [
+        { label: 'Confirm', action: () => useModalManager().closeModal()},
+      ]
+    })
   }},
 ]
 
 // Modal state
 const modalManager = useModalManager()
-const modalConfig = ref<ModalConfig>({
-  title: { label: 'Hello' },
-  message: { label: 'This is a modal' },
-  button: [
-    { label: 'Confirm', action: () => modalManager.closeModal() }
-  ]
-})
 
 const store = useWindowManager()
 const showRightClickMenu = ref(false)
