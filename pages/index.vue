@@ -1,7 +1,7 @@
 <template>
   <Desktop>
     <Modal
-      v-if="showModal"
+      v-if="modalManager.showModal"
       :modal="modalConfig"
     />
     <RightClickMenu
@@ -44,19 +44,10 @@ import Modal from '~/components/Modal.vue'
 import RightClickMenu from '~/components/apps/RightClickMenu.vue'
 import type { MenuItem } from '~/types/menu.type'
 import type { ModalConfig } from '~/types/modal.type'
+import { useModalManager } from '~/stores/modalManager'
 
 // 狀態新增：目前的選單內容
 const currentMenuItems = ref<MenuItem[]>([])
-
-const toggleModal = (show: boolean) => {
-  if (!document.startViewTransition) {
-    useModalManager().openModal(modalConfig.value)  
-    return
-  }
-  document.startViewTransition(() => {
-    showModal.value = show
-  })
-}
 
 // 定義不同的選單設定
 const desktopMenu: MenuItem[] = [
@@ -70,12 +61,12 @@ const appMenu: MenuItem[] = [
 ]
 
 // Modal state
-const showModal = ref(false)
+const modalManager = useModalManager()
 const modalConfig = ref<ModalConfig>({
   title: { label: 'Hello' },
   message: { label: 'This is a modal' },
   button: [
-    { label: 'Confirm', action: () => toggleModal(false) }
+    { label: 'Confirm', action: () => modalManager.closeModal() }
   ]
 })
 
