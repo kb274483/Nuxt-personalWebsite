@@ -28,7 +28,10 @@
           :key="window.id"
           :window-state="window"
         >
-          <component :is="resolveComponent(window.component)" />
+          <component 
+            :is="resolveComponent(window.component)"
+            v-bind="window.props"
+          />
         </Window>
       </div>
     </div>
@@ -36,28 +39,48 @@
 </template>
 
 <script setup lang="ts">
-import { Code, Image, Settings, FileUser  } from 'lucide-vue-next'
+import { Code, Image, Settings, FileUser, FileText  } from 'lucide-vue-next'
 import { onMounted, onBeforeUnmount, computed, nextTick, ref, useTemplateRef } from 'vue'
 import { useWindowManager } from '~/stores/windowManager'
 import { useDesktopItemsManager } from '~/stores/desktopItemsManager'
-import Modal from '~/components/Modal.vue'
-import RightClickMenu from '~/components/apps/RightClickMenu.vue'
 import type { MenuItem } from '~/types/menu.type'
 import type { ModalConfig } from '~/types/modal.type'
 import { useModalManager } from '~/stores/modalManager'
+import Modal from '~/components/Modal.vue'
+import RightClickMenu from '~/components/apps/RightClickMenu.vue'
+import TextEditor from '~/components/apps/TextEditor.vue' 
 
 // 狀態新增：目前的選單內容
 const currentMenuItems = ref<MenuItem[]>([])
 
 // 定義不同的選單設定
 const desktopMenu: MenuItem[] = [
-  { label: 'New Folder', action: () => console.log('New Folder') },
+  { label: 'New Text File', action: () => {
+
+    // 取得用戶自行建立的檔案數量
+    const createdLength = useDesktopItemsManager().desktopItems.filter(item => item.app_type === 'file').length
+    
+    // 建立預設名稱與內容
+    useDesktopItemsManager().addDesktopItem(`
+      New Text File (${createdLength + 1}).txt`,
+      `This is a new text file created on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`
+    )
+  }},
   { label: 'Change Wallpaper', action: () => console.log('Change Wallpaper') },
 ]
 
 const appMenu: MenuItem[] = [
-  { label: 'Rename', action: () => console.log('Rename') },
-  { label: 'Delete', action: () => console.log('Delete') },
+  { label: 'Rename', action: () => {
+    if(menuClickID.value){
+      useDesktopItemsManager().setEditStatus(menuClickID.value, true)
+    }
+  }},
+  { label: 'Delete', action: () => {
+    if(menuClickID.value){
+      useDesktopItemsManager().removeDesktopItem(menuClickID.value)
+      menuClickID.value = null
+    }
+  }},
 ]
 
 // Modal state
@@ -83,18 +106,24 @@ const resolveComponent = (name: string) => {
     case 'Browser': return resolveComponent('AppsBrowser')
     case 'Photos': return resolveComponent('AppsPhotos')
     case 'Settings': return resolveComponent('AppsSettings')
+    case 'TextEditor': return TextEditor
     default: return resolveComponent(name)
   }
 }
 
+const menuClickID = ref<string | null>(null)
 const handleContextMenu = async (e: MouseEvent) => {
   e.preventDefault()
   let items = desktopMenu
   
   const target = e.target as HTMLElement
-  const deskItem = target.closest('.desk-item') // 請記得在 DeskItem.vue 加這個 class
+  const deskItem = target.closest('.desk-item')
   
   if (deskItem) {
+    const appType = (deskItem as HTMLElement).dataset.appType as string
+    if (appType === 'file') {
+      menuClickID.value = (deskItem as HTMLElement).dataset.id as string
+    }
     items = appMenu
   }
   
