@@ -19,14 +19,17 @@
       class="h-8 bg-gray-200/50 dark:bg-white/5 flex items-center px-3 space-x-2 cursor-default select-none border-b border-gray-300/30 dark:border-white/5 shrink-0"
     >
       <div class="flex space-x-2 group">
-        <button @click.stop="close" class="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center text-[8px] text-black/50 opacity-100 transition-colors">
-            <span class="hidden group-hover:block">x</span>
+        <button @click.stop="close" class="w-6 h-6 rounded border dark:border-white border-black flex items-center justify-center text-[8px] dark:text-white text-black opacity-100 transition-colors">
+          <CircleX class="w-full h-hull hidden group-hover:block" />
         </button>
-        <button @click.stop="minimize" class="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600 flex items-center justify-center text-[8px] text-black/50 opacity-100 transition-colors">
-            <span class="hidden group-hover:block">-</span>
+        <button @click.stop="minimize" class="w-6 h-6 rounded border dark:border-white border-black flex items-center justify-center text-[8px] dark:text-white text-black opacity-100 transition-colors">
+          <ArrowBigDown class="w-full h-hull hidden group-hover:block" />
         </button>
-        <button @click.stop="toggleMaximize" class="w-3 h-3 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center text-[8px] text-black/50 opacity-100 transition-colors">
-            <span class="hidden group-hover:block">+</span>
+        <button @click.stop="toggleMaximize" class="w-6 h-6 rounded border dark:border-white border-black flex items-center justify-center text-[8px] dark:text-white text-black opacity-100 transition-colors">
+          <Minimize2 v-if="windowState.isMaximized" 
+            class="w-full h-hull hidden group-hover:block" 
+          />
+          <Maximize2 v-else class="w-full h-hull hidden group-hover:block" />
         </button>
       </div>
       <div class="flex-1 text-center text-xs font-semibold text-gray-700 dark:text-gray-200 truncate px-2">{{ windowState.title }}</div>
@@ -37,7 +40,6 @@
     <div class="flex-1 overflow-auto relative bg-white/50 dark:bg-gray-900/50 text-gray-900 dark:text-gray-100">
       <slot />
     </div>
-
 
     <div
       v-if="!windowState.isMaximized"
@@ -52,6 +54,7 @@
 </template>
 
 <script setup lang="ts">
+import { Minimize2, Maximize2, CircleX, ArrowBigDown } from 'lucide-vue-next'
 import { useTemplateRef } from 'vue'
 import { useDraggable } from '@vueuse/core'
 import { useWindowManager, type WindowState } from '~/stores/windowManager'

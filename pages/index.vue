@@ -29,7 +29,7 @@
           :window-state="window"
         >
           <component 
-            :is="resolveComponent(window.component)"
+            :is="getComponent(window.component)"
             v-bind="window.props"
           />
         </Window>
@@ -114,7 +114,7 @@ const rightClickMenuRef = useTemplateRef<InstanceType<typeof RightClickMenu>>('r
 const rightClickMenu = ref<{ x: number, y: number }>({ x: 0, y: 0 })
 
 const apps = computed(() => useDesktopItemsManager().desktopItems)
-const resolveComponent = (name: string) => {
+const getComponent = (name: string) => {
   switch (name) {
     case 'Finder': return resolveComponent('AppsFinder')
     case 'Browser': return resolveComponent('AppsBrowser')
