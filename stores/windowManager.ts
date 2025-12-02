@@ -37,8 +37,8 @@ export const useWindowManager = defineStore('windowManager', () => {
             props,
             x: isMobile ? 0 : 100 + (windows.value.length * 30),
             y: isMobile ? 0 : 100 + (windows.value.length * 30),
-            width: isMobile ? window.innerWidth : 800,
-            height: isMobile ? window.innerHeight : 600,
+            width: isMobile ? window.innerWidth : 1000,
+            height: isMobile ? window.innerHeight : 800,
             zIndex: ++zIndexCounter.value,
             isMinimized: false,
             isMaximized: isMobile

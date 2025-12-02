@@ -24,10 +24,10 @@
 
       <div class="flex-1 bg-white border border-gray-300 rounded px-3 py-1 text-sm text-gray-600 flex items-center shadow-sm focus-within:ring-2 focus-within:ring-blue-200 transition-all">
         <span v-if="isLoading" class="mr-2 animate-spin">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+          <LoaderCircle class="w-4 h-4" />
         </span>
         <span v-else class="mr-2 text-gray-400">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <Search class="w-4 h-4" />
         </span>
         <input 
           type="text" 
@@ -98,6 +98,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { Search, LoaderCircle } from 'lucide-vue-next'
 import type { DemoItem } from '~/types/demoItem.type'
 
 // State

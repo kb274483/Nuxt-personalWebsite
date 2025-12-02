@@ -1,5 +1,5 @@
 <template>
-  <div class="absolute z-50 bg-slate-100 dark:bg-slate-900 rounded-md shadow-md p-1 border border-slate-500 dark:border-slate-500 w-48"
+  <div class="absolute z-50 bg-slate-100 dark:bg-stone-800 rounded-md shadow-md p-1 border border-slate-500 dark:border-slate-500 w-48"
   :style="{
       left: `${props.x}px`,
       top: `${props.y}px`,

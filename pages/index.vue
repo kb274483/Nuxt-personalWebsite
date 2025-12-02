@@ -13,7 +13,7 @@
     />
     <SystemBar />
     <div class="relative z-10 w-full h-full flex flex-col justify-between pointer-events-none">
-      <div class="flex-1 relative pointer-events-auto mt-8">
+      <div class="flex-1 relative pointer-events-auto pt-8">
         <div class="absolute inset-0 w-full h-dvh bg-cover bg-center z-0 transition-all duration-500 p-4">
           <DeskItem
             class="w-12 h-12 m-2"
@@ -22,7 +22,6 @@
             :app="app"
           />
         </div>
-
         <Window
           v-for="window in store.windows"
           :key="window.id"
@@ -65,7 +64,7 @@ const desktopMenu: MenuItem[] = [
       `This is a new text file created on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`
     )
   }},
-  { label: 'Change Wallpaper', action: () => console.log('Change Wallpaper') },
+  { label: 'Display Settings', action: () => useWindowManager().openWindow('settings', 'Display Settings', 'Settings')},
 ]
 
 const appMenu: MenuItem[] = [
@@ -73,7 +72,16 @@ const appMenu: MenuItem[] = [
     if(menuClickID.value){
       useDesktopItemsManager().setEditStatus(menuClickID.value, true)
       menuClickID.value = null
+      return
     }
+    useModalManager().openModal({
+      title: { label: 'Warning' },
+      icon: CircleAlert,
+      message: { label: 'This file is REALLY important! You cannot rename it.' },
+      button: [
+        { label: 'Confirm', action: () => useModalManager().closeModal()},
+      ]
+    })
   }},
   { label: 'Delete', action: () => {
     if(menuClickID.value){
@@ -116,9 +124,9 @@ const rightClickMenu = ref<{ x: number, y: number }>({ x: 0, y: 0 })
 const apps = computed(() => useDesktopItemsManager().desktopItems)
 const getComponent = (name: string) => {
   switch (name) {
-    case 'Finder': return resolveComponent('AppsFinder')
-    case 'Browser': return resolveComponent('AppsBrowser')
-    case 'Photos': return resolveComponent('AppsPhotos')
+    case 'Resume': return resolveComponent('AppsResume')
+    case 'Code Works': return resolveComponent('AppsBrowser')
+    case 'Gallery': return resolveComponent('AppsPhotos')
     case 'Settings': return resolveComponent('AppsSettings')
     case 'TextEditor': return TextEditor
     default: return resolveComponent(name)
@@ -174,10 +182,10 @@ const closeRightClickMenu = () => {
 
 onMounted(() => {
   const appsDefault = [
-    { id: 'resume', name: 'Resume', icon: FileUser, disabled_delete: true, x: 10, y: 20, width: 48, height: 48, zIndex: 1 },
-    { id: 'browser', name: 'Browser', icon: Code, disabled_delete: true, x: 10, y: 100, width: 48, height: 48, zIndex: 1 },
-    { id: 'photos', name: 'Photos', icon: Image, disabled_delete: true, x: 10, y: 180, width: 48, height: 48, zIndex: 1 },
-    { id: 'settings', name: 'Settings', icon: Settings, disabled_delete: true, x: 10, y: 260, width: 48, height: 48, zIndex: 1 },
+    { id: 'resume', name: 'Resume', icon: FileUser, disabled_delete: true, x: 10, y: 30, width: 48, height: 48, zIndex: 1 },
+    { id: 'browser', name: 'Code Works', icon: Code, disabled_delete: true, x: 10, y: 110, width: 48, height: 48, zIndex: 1 },
+    { id: 'photos', name: 'Gallery', icon: Image, disabled_delete: true, x: 10, y: 190, width: 48, height: 48, zIndex: 1 },
+    { id: 'settings', name: 'Settings', icon: Settings, disabled_delete: true, x: 10, y: 270, width: 48, height: 48, zIndex: 1 },
   ]
   useDesktopItemsManager().setupDesktopItems(appsDefault)
   window.addEventListener('contextmenu', handleContextMenu)

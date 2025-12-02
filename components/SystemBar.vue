@@ -1,7 +1,7 @@
 <template>
   <div class="w-full h-12 bg-slate-400/70 dark:bg-stone-600/50 backdrop-blur-md text-gray-900 dark:text-white flex items-center justify-between px-4 text-xs font-medium select-none z-50 fixed top-0 left-0 border-b border-gray-200/50 dark:border-white/10 shadow-sm transition-colors duration-300">
     <div class="flex items-center space-x-4">
-      <span class="font-bold text-base">Roy</span>
+      <span class="font-bold text-base">Roy Space</span>
     </div>
     <div class="flex items-center space-x-3">
       <div class="relative group">
@@ -34,17 +34,16 @@
         class="p-2 rounded-md hover:bg-gray-200/50 dark:hover:bg-white/10 transition-colors"
         :title="isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
       >
-        <Sun v-if="isDark" class="w-8 h-8" />
-        <Moon v-else class="w-8 h-8" />
+        <Sun v-show="isDark" class="w-8 h-8" />
+        <Moon v-show="!isDark" class="w-8 h-8" />
       </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Sun, Moon } from 'lucide-vue-next'
+import { Sun, Moon, AppWindow } from 'lucide-vue-next'
 import { useWindowManager } from '~/stores/windowManager'
-import { AppWindow } from 'lucide-vue-next'
 
 const isDark = useDark()
 const toggleDark = useToggle(isDark)

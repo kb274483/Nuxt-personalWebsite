@@ -10,8 +10,9 @@
       height: `${height}px`,
       zIndex: windowState.zIndex,
     }"
-    :class="{ 'inset-0 !w-full !h-full !left-0 !top-8 rounded-none': windowState.isMaximized }"
+    :class="{ 'inset-0 !w-full !h-full !left-0 !top-12 rounded-none': windowState.isMaximized }"
     @mousedown="focusWindow"
+    @contextmenu.stop=""
   >
 
     <div
@@ -19,13 +20,13 @@
       class="h-8 bg-gray-200/50 dark:bg-white/5 flex items-center px-3 space-x-2 cursor-default select-none border-b border-gray-300/30 dark:border-white/5 shrink-0"
     >
       <div class="flex space-x-2 group">
-        <button @click.stop="close" class="w-6 h-6 rounded border dark:border-white border-black flex items-center justify-center text-[8px] dark:text-white text-black opacity-100 transition-colors">
+        <button @click.stop="close" class="w-5 h-5 rounded border dark:border-white border-black flex items-center justify-center text-[8px] dark:text-white text-black opacity-100 transition-colors">
           <CircleX class="w-full h-hull hidden group-hover:block" />
         </button>
-        <button @click.stop="minimize" class="w-6 h-6 rounded border dark:border-white border-black flex items-center justify-center text-[8px] dark:text-white text-black opacity-100 transition-colors">
+        <button @click.stop="minimize" class="w-5 h-5 rounded border dark:border-white border-black flex items-center justify-center text-[8px] dark:text-white text-black opacity-100 transition-colors">
           <ArrowBigDown class="w-full h-hull hidden group-hover:block" />
         </button>
-        <button @click.stop="toggleMaximize" class="w-6 h-6 rounded border dark:border-white border-black flex items-center justify-center text-[8px] dark:text-white text-black opacity-100 transition-colors">
+        <button @click.stop="toggleMaximize" class="w-5 h-5 rounded border dark:border-white border-black flex items-center justify-center text-[8px] dark:text-white text-black opacity-100 transition-colors">
           <Minimize2 v-if="windowState.isMaximized" 
             class="w-full h-hull hidden group-hover:block" 
           />
@@ -37,7 +38,7 @@
     </div>
 
     <!-- Content -->
-    <div class="flex-1 overflow-auto relative bg-white/50 dark:bg-gray-900/50 text-gray-900 dark:text-gray-100">
+    <div class="flex-1 overflow-auto relativetext-gray-900 dark:text-gray-100 bg-white">
       <slot />
     </div>
 
