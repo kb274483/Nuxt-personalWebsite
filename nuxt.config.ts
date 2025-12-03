@@ -4,9 +4,9 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   srcDir: '.',
   modules: [
-    '@nuxtjs/tailwindcss',
     '@pinia/nuxt',
-    '@vueuse/nuxt'
+    '@nuxtjs/tailwindcss',
+    '@vueuse/nuxt',
   ],
   css: ['~/assets/css/main.css'],
   postcss: {
@@ -15,4 +15,10 @@ export default defineNuxtConfig({
       autoprefixer: {},
     },
   },
+  runtimeConfig: {
+    public: {
+      supabaseUrl: process.env.VITE_SUPABASE_URL,
+      supabaseKey: process.env.VITE_SUPABASE_ANON_KEY
+    }
+  }
 })
