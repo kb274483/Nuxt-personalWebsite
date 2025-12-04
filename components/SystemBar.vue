@@ -2,6 +2,9 @@
   <div class="w-full h-12 bg-slate-400/70 dark:bg-stone-600/50 backdrop-blur-md text-gray-900 dark:text-white flex items-center justify-between px-4 text-xs font-medium select-none z-50 fixed top-0 left-0 border-b border-gray-200/50 dark:border-white/10 shadow-sm transition-colors duration-300">
     <div class="flex items-center space-x-4">
       <span class="font-bold text-base">Roy Space</span>
+      <a href="https://github.com/kb274483" target="_blank" class="hover:scale-110 transition-transform opacity-60 hover:opacity-100">
+        <img src="@/public/github-logo.png" alt="github" class="w-8 h-8 bg-white rounded-full" />
+      </a>
     </div>
     <div class="flex items-center space-x-3">
       <div class="relative group">
