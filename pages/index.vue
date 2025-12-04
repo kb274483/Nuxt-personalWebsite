@@ -118,7 +118,7 @@ const appMenu: MenuItem[] = [
 const modalManager = useModalManager()
 
 const store = useWindowManager()
-const showRightClickMenu = ref(false)
+const showRightClickMenu = ref<boolean>(false)
 
 const rightClickMenuRef = useTemplateRef<InstanceType<typeof RightClickMenu>>('rightClickMenuRef')
 const rightClickMenu = ref<{ x: number, y: number }>({ x: 0, y: 0 })

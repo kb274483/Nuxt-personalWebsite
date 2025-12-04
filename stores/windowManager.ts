@@ -18,7 +18,7 @@ export interface WindowState {
 export const useWindowManager = defineStore('windowManager', () => {
     const windows = ref<WindowState[]>([])
     const activeWindowId = ref<string | null>(null) 
-    const zIndexCounter = ref(100)
+    const zIndexCounter = ref<number>(100)
 
     const openWindow = (id: string, title: string, component: string, props: any = {}) => {
         const existing = windows.value.find(w => w.id === id)

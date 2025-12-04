@@ -96,7 +96,7 @@ const { wallpaper, setWallpaper } = useWallpaper()
 // 取得照片
 const { getPhotos } = usePhotoApi()
 const photos = ref<Photo[]>([])
-const loading = ref(true)
+const loading = ref<boolean>(true)
 
 const isDark = useDark()
 const toggleDark = useToggle(isDark)

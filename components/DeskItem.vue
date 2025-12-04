@@ -53,10 +53,10 @@ const handleClick = () => {
 const store = useWindowManager()
 const deskItemRef = useTemplateRef<HTMLElement>('deskItemRef')
 
-const x = ref(props.app.x)
-const y = ref(props.app.y)
-const width = ref(props.app.width)
-const height = ref(props.app.height)
+const x = ref<number>(props.app.x)
+const y = ref<number>(props.app.y)
+const width = ref<number | undefined>(props.app.width)
+const height = ref<number | undefined>(props.app.height)
 
 watch(() => props.app.x, (newX) => { x.value = newX })
 watch(() => props.app.y, (newY) => { y.value = newY })

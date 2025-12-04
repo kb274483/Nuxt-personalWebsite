@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import type { ModalConfig } from '~/types/modal.type'
 
 export const useModalManager = defineStore('modalManager', () => {
-  const showModal = ref(false)
+  const showModal = ref<boolean>(false)
 
   const modalConfig = ref<ModalConfig>({} as ModalConfig)
   

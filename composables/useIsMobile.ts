@@ -1,7 +1,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 
 export function useIsMobile() {
-  const isMobile = ref(false)
+  const isMobile = ref<boolean>(false)
 
   const checkMobile = () => {
     isMobile.value = window.innerWidth < 768

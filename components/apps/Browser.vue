@@ -104,8 +104,8 @@ import type { DemoItem } from '~/types/demoItem.type'
 // State
 const HOME_URL = 'https://roy.space/home'
 const historyStack = ref<string[]>([HOME_URL])
-const currentIndex = ref(0)
-const isLoading = ref(false)
+const currentIndex = ref<number>(0)
+const isLoading = ref<boolean>(false)
 
 // 目前顯示的 URL
 const currentUrl = computed(() => historyStack.value[currentIndex.value])

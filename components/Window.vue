@@ -75,10 +75,10 @@ const store = useWindowManager()
 const windowRef = useTemplateRef<HTMLElement>('windowRef')
 const handleRef = useTemplateRef<HTMLElement>('handleRef')
 
-const x = ref(props.windowState.x)
-const y = ref(props.windowState.y)
-const width = ref(props.windowState.width)
-const height = ref(props.windowState.height)
+const x = ref<number>(props.windowState.x)
+const y = ref<number>(props.windowState.y)
+const width = ref<number>(props.windowState.width)
+const height = ref<number>(props.windowState.height)
 
 useDraggable(windowRef, {
   initialValue: { x: props.windowState.x, y: props.windowState.y },
@@ -120,7 +120,7 @@ const toggleMaximize = () => {
   store.toggleMaximize(props.windowState.id)
 }
 
-const isResizing = ref(false)
+const isResizing = ref<boolean>(false)
 const startResize = (e: MouseEvent) => {
   isResizing.value = true
   const startX = e.clientX

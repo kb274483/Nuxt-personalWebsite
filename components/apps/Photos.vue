@@ -55,7 +55,21 @@
       >
         <div class="flex flex-col md:flex-row w-full h-full max-w-8xl p-4 gap-4">
           <!-- 照片 -->
-          <div class="flex-1 flex items-center justify-center relative overflow-hidden rounded bg-transparent">
+          <div class="flex-1 flex items-center justify-center relative overflow-hidden rounded bg-transparent"
+            @mouseenter="controlBtnShow(true)"
+            @mouseleave="controlBtnShow(false)"
+          >
+            <div
+              class="absolute inset-0 w-full h-full flex items-center justify-between rounded-lg transition-opacity duration-500 ease-in-out z-50"
+              :class="{ 'opacity-100': isControlBtnShow, 'opacity-0': !isControlBtnShow }"
+            >
+              <ArrowBigLeftDash @click="lightboxControl('prev')"
+                class="w-12 h-12 opacity-50 cursor-pointer bg-white/50 dark:bg-gray-700/50 rounded-full p-2 hover:bg-white/90 dark:hover:bg-gray-700/90 transition-all duration-200 hover:scale-110"
+              />
+              <ArrowBigRightDash @click="lightboxControl('next')" 
+                class="w-12 h-12 opacity-50 cursor-pointer bg-white/50 dark:bg-gray-700/50 rounded-full p-2 hover:bg-white/90 dark:hover:bg-gray-700/90 transition-all duration-200 hover:scale-110" 
+              />
+            </div>
             <img
               @load="handleImageLoad"
               :src="selectedPhoto.src" 
@@ -155,12 +169,12 @@
 <script setup lang="ts">
 import { usePhotoApi } from '~/composables/api/usePhotoApi'
 import type { Photo } from '~/types/photo.type'
-import { X, LoaderCircle } from 'lucide-vue-next'
+import { X, LoaderCircle, ArrowBigRightDash, ArrowBigLeftDash } from 'lucide-vue-next'
 import { useIsMobile } from '~/composables/useIsMobile'
 
 const { getPhotos } = usePhotoApi()
 const photos = ref<Photo[]>([])
-const loading = ref(true)
+const loading = ref<boolean>(true)
 
 // 判斷是否為手機
 const { isMobile } = useIsMobile()
@@ -174,8 +188,37 @@ const closeLightbox = () => {
   imageLoaded.value = false
 }
 
+// 燈箱控制按鈕 state
+const isControlBtnShow = ref<boolean>(false)
+const controlBtnShow = (status: boolean) => {
+  if (!isMobile.value) {
+    isControlBtnShow.value = status
+  }
+}
+
+const lightboxControl = (direction: 'prev' | 'next') => {
+  const currentIndex = photos.value.findIndex(photo => photo.id === selectedPhoto.value?.id)
+  let targetIndex = 0
+  imageLoaded.value = true
+  if (direction === 'prev') {
+    targetIndex = currentIndex - 1
+    if (targetIndex < 0) {
+      targetIndex = photos.value.length - 1
+    }
+  } else if (direction === 'next') {
+    targetIndex = currentIndex + 1
+    if (targetIndex >= photos.value.length) {
+      targetIndex = 0
+    }
+  }
+  selectedPhoto.value = photos.value[targetIndex] as Photo
+  if (selectedPhoto.value) {
+    imageLoaded.value = false
+  }
+}
+
 // Image Loading
-const imageLoaded = ref(false)
+const imageLoaded = ref<boolean>(false)
 const handleImageLoad = () => {
   console.log('image loaded')
   imageLoaded.value = true
@@ -198,6 +241,9 @@ onMounted(async () => {
     console.error('Load photos failed', e)
   } finally {
     loading.value = false
+  }
+  if (isMobile.value) {
+    isControlBtnShow.value = true
   }
 })
 </script>
