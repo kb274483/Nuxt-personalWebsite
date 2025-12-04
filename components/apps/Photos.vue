@@ -73,7 +73,9 @@
           </div>
 
           <!-- 照片資訊 -->
-          <div class="relative w-full md:w-64 flex-none bg-gray-50 dark:bg-[#252525] rounded-lg rounded-tr-3xl p-5 flex flex-col gap-4 overflow-y-auto border border-gray-200 dark:border-gray-700">
+          <div class="relative w-full md:w-64 flex-none bg-gray-50 dark:bg-[#252525] rounded-lg rounded-tr-3xl p-5 flex flex-col gap-4 overflow-y-auto border border-gray-200 dark:border-gray-700"
+            :class="{ 'mb-12': isMobile }"
+          >
             <button 
               class="absolute top-0 right-0 p-2 bg-gray-200 dark:bg-gray-700 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors z-50"
               @click="closeLightbox"
@@ -154,11 +156,14 @@
 import { usePhotoApi } from '~/composables/api/usePhotoApi'
 import type { Photo } from '~/types/photo.type'
 import { X, LoaderCircle } from 'lucide-vue-next'
+import { useIsMobile } from '~/composables/useIsMobile'
 
 const { getPhotos } = usePhotoApi()
 const photos = ref<Photo[]>([])
 const loading = ref(true)
 
+// 判斷是否為手機
+const { isMobile } = useIsMobile()
 // Lightbox State
 const selectedPhoto = ref<Photo | null>(null)
 const openLightbox = (photo: Photo) => {

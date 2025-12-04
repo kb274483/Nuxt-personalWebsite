@@ -22,16 +22,18 @@
             :app="app"
           />
         </div>
-        <Window
-          v-for="window in store.windows"
-          :key="window.id"
-          :window-state="window"
-        >
-          <component 
-            :is="getComponent(window.component)"
-            v-bind="window.props"
-          />
-        </Window>
+        <TransitionGroup name="window-pop">
+          <Window
+            v-for="window in store.windows"
+            :key="window.id"
+            :window-state="window"
+          >
+            <component 
+              :is="getComponent(window.component)"
+              v-bind="window.props"
+            />
+          </Window>
+        </TransitionGroup>
       </div>
     </div>
   </Desktop>
@@ -91,11 +93,11 @@ const appMenu: MenuItem[] = [
         icon: Trash2,
         message: { label: 'Are you sure you want to delete this file?' },
         button: [
+          { label: 'Cancel', action: () => useModalManager().closeModal() },
           { label: 'Confirm', action: () =>{
             useDesktopItemsManager().removeDesktopItem(targetID)
             useModalManager().closeModal()
-          }},
-          { label: 'Cancel', action: () => useModalManager().closeModal() }
+          }}
         ]
       })
       menuClickID.value = null
@@ -197,3 +199,22 @@ onBeforeUnmount(() => {
   window.removeEventListener('click', closeRightClickMenu)
 })
 </script>
+
+<style scoped>
+  .window-pop-enter-active,
+  .window-pop-leave-active {
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); 
+  }
+
+  .window-pop-enter-from,
+  .window-pop-leave-to {
+    opacity: 0;
+    transform: scale(0.8); 
+  }
+
+  .window-pop-enter-to,
+  .window-pop-leave-from {
+    opacity: 1;
+    transform: scale(1);
+  }
+</style>

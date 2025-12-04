@@ -10,6 +10,7 @@
       height: `${height}px`,
     }"
     @dblclick="openApp()"
+    @click="handleClick"
   >
     <button 
       class="group relative flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all duration-200 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/30 shadow-sm active:scale-95 hover:rotate-2 hover:scale-110"
@@ -35,11 +36,20 @@ import { useDesktopItemsManager } from '~/stores/desktopItemsManager'
 import { useDraggable } from '@vueuse/core'
 import type { AppItem, AppItemPosition } from '~/types/appItem.type'
 import { useBoundaryCheck } from '~/composables/useBoundaryCheck'
+import { useIsMobile } from '~/composables/useIsMobile'
 
 const props = defineProps<{
   app: AppItem & AppItemPosition,
 }>()
 
+// 判斷是否為手機
+const { isMobile } = useIsMobile()
+const handleClick = () => {
+  if (isMobile.value) {
+    openApp()
+  }
+}
+// 
 const store = useWindowManager()
 const deskItemRef = useTemplateRef<HTMLElement>('deskItemRef')
 
@@ -54,6 +64,7 @@ watch(() => props.app.y, (newY) => { y.value = newY })
 useDraggable(deskItemRef, {
   initialValue: { x: props.app.x, y: props.app.y },
   handle: deskItemRef,
+  disabled: computed(() => isMobile.value),
 
   onMove: (position) => {
     const { x: newX, y: newY } = useBoundaryCheck().checkBoundary(position.x, position.y, (width.value as number) , (height.value as number))

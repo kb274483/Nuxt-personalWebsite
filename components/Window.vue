@@ -1,57 +1,59 @@
 <template>
-  <div
-    v-show="!windowState.isMinimized"
-    ref="windowRef"
-    class="absolute flex flex-col bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-lg shadow-2xl overflow-hidden border border-white/30 dark:border-white/10 transition-shadow duration-200"
-    :style="{
-      left: `${x}px`,
-      top: `${y}px`,
-      width: `${width}px`,
-      height: `${height}px`,
-      zIndex: windowState.zIndex,
-    }"
-    :class="{ 'inset-0 !w-full !h-full !left-0 !top-12 rounded-none': windowState.isMaximized }"
-    @mousedown="focusWindow"
-    @contextmenu.stop=""
-  >
-
+  <Transition name="window-minimize">
     <div
-      ref="handleRef"
-      class="h-8 bg-gray-200/50 dark:bg-white/5 flex items-center px-3 space-x-2 cursor-default select-none border-b border-gray-300/30 dark:border-white/5 shrink-0"
+      v-show="!windowState.isMinimized"
+      ref="windowRef"
+      class="absolute flex flex-col bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-lg shadow-2xl overflow-hidden border border-white/30 dark:border-white/10 transition-shadow duration-200"
+      :style="{
+        left: `${x}px`,
+        top: `${y}px`,
+        width: `${width}px`,
+        height: `${height}px`,
+        zIndex: windowState.zIndex,
+      }"
+      :class="{ 'inset-0 !w-full !h-full !left-0 !top-12 rounded-none': windowState.isMaximized || isMobile }"
+      @mousedown="focusWindow"
+      @contextmenu.stop=""
     >
-      <div class="flex space-x-2 group">
-        <button @click.stop="close" class="w-5 h-5 rounded border dark:border-white border-black flex items-center justify-center text-[8px] dark:text-white text-black opacity-100 transition-colors">
-          <CircleX class="w-full h-hull hidden group-hover:block" />
-        </button>
-        <button @click.stop="minimize" class="w-5 h-5 rounded border dark:border-white border-black flex items-center justify-center text-[8px] dark:text-white text-black opacity-100 transition-colors">
-          <ArrowBigDown class="w-full h-hull hidden group-hover:block" />
-        </button>
-        <button @click.stop="toggleMaximize" class="w-5 h-5 rounded border dark:border-white border-black flex items-center justify-center text-[8px] dark:text-white text-black opacity-100 transition-colors">
-          <Minimize2 v-if="windowState.isMaximized" 
-            class="w-full h-hull hidden group-hover:block" 
-          />
-          <Maximize2 v-else class="w-full h-hull hidden group-hover:block" />
-        </button>
+  
+      <div
+        ref="handleRef"
+        class="h-8 bg-gray-200/50 dark:bg-white/5 flex items-center px-3 space-x-2 cursor-default select-none border-b border-gray-300/30 dark:border-white/5 shrink-0"
+      >
+        <div class="flex space-x-2 group">
+          <button @click.stop="close" class="w-5 h-5 rounded border dark:border-white border-black flex items-center justify-center text-[8px] dark:text-white text-black opacity-100 transition-colors">
+            <CircleX class="w-full h-hull hidden group-hover:block" />
+          </button>
+          <button @click.stop="minimize" class="w-5 h-5 rounded border dark:border-white border-black flex items-center justify-center text-[8px] dark:text-white text-black opacity-100 transition-colors">
+            <ArrowBigDown class="w-full h-hull hidden group-hover:block" />
+          </button>
+          <button @click.stop="toggleMaximize" class="w-5 h-5 rounded border dark:border-white border-black flex items-center justify-center text-[8px] dark:text-white text-black opacity-100 transition-colors">
+            <Minimize2 v-if="windowState.isMaximized" 
+              class="w-full h-hull hidden group-hover:block" 
+            />
+            <Maximize2 v-else class="w-full h-hull hidden group-hover:block" />
+          </button>
+        </div>
+        <div class="flex-1 text-center text-xs font-semibold text-gray-700 dark:text-gray-200 truncate px-2">{{ windowState.title }}</div>
+        <div class="w-14"></div>
       </div>
-      <div class="flex-1 text-center text-xs font-semibold text-gray-700 dark:text-gray-200 truncate px-2">{{ windowState.title }}</div>
-      <div class="w-14"></div>
+  
+      <!-- Content -->
+      <div class="flex-1 overflow-auto relativetext-gray-900 dark:text-gray-100 bg-white">
+        <slot />
+      </div>
+  
+      <div
+        v-if="!windowState.isMaximized"
+        class="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize z-50"
+        @mousedown.stop="startResize"
+      >
+        <svg viewBox="0 0 10 10" class="w-full h-full text-gray-400 opacity-50">
+          <path d="M6 9 L9 6 M3 9 L9 3" stroke="currentColor" stroke-width="1" />
+        </svg>
+      </div>
     </div>
-
-    <!-- Content -->
-    <div class="flex-1 overflow-auto relativetext-gray-900 dark:text-gray-100 bg-white">
-      <slot />
-    </div>
-
-    <div
-      v-if="!windowState.isMaximized"
-      class="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize z-50"
-      @mousedown.stop="startResize"
-    >
-      <svg viewBox="0 0 10 10" class="w-full h-full text-gray-400 opacity-50">
-        <path d="M6 9 L9 6 M3 9 L9 3" stroke="currentColor" stroke-width="1" />
-      </svg>
-    </div>
-  </div>
+  </Transition>
 </template>
 
 <script setup lang="ts">
@@ -60,10 +62,14 @@ import { useTemplateRef } from 'vue'
 import { useDraggable } from '@vueuse/core'
 import { useWindowManager, type WindowState } from '~/stores/windowManager'
 import { useBoundaryCheck } from '~/composables/useBoundaryCheck'
+import { useIsMobile } from '~/composables/useIsMobile'
 
 const props = defineProps<{
   windowState: WindowState
 }>()
+
+// 判斷是否為手機
+const { isMobile } = useIsMobile()
 
 const store = useWindowManager()
 const windowRef = useTemplateRef<HTMLElement>('windowRef')
@@ -144,3 +150,20 @@ const startResize = (e: MouseEvent) => {
   window.addEventListener('mouseup', onMouseUp)
 }
 </script>
+
+<style scoped>
+.window-minimize-enter-active,
+.window-minimize-leave-active {
+  transition: all 0.3s ease-in-out;
+}
+
+.window-minimize-leave-to {
+  opacity: 0;
+  transform: scale(0.5) translateY(200px); 
+}
+
+.window-minimize-enter-from {
+  opacity: 0;
+  transform: scale(0.5) translateY(200px);
+}
+</style>
