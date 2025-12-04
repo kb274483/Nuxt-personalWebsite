@@ -122,6 +122,19 @@ export const useDesktopItemsManager = defineStore('desktopItemsManager', () => {
     localStorage.setItem('userCreatedFiles', JSON.stringify(userCreated))
   }
 
+  // 排列整齊
+  const arrangeDesktopItems = () => {
+    desktopItems.value.forEach((item) => {
+      item.x = roundTo10(item.x)
+      item.y = roundTo10(item.y)
+      updateDesktopItemPosition(item.id, item.x, item.y)
+    })
+  }
+
+  const roundTo10 = (num: number) => {
+    return Math.round(num / 10) * 10;
+  }
+
   return {
     desktopItems,
     setupDesktopItems,
@@ -131,6 +144,7 @@ export const useDesktopItemsManager = defineStore('desktopItemsManager', () => {
     updateFileContent,
     saveUserCreated,
     renameFile,
-    setEditStatus
+    setEditStatus,
+    arrangeDesktopItems
   }
 })

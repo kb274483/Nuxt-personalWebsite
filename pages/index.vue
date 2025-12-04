@@ -56,7 +56,6 @@ const currentMenuItems = ref<MenuItem[]>([])
 // 定義不同的選單設定
 const desktopMenu: MenuItem[] = [
   { label: 'New Text File', action: () => {
-
     // 取得用戶自行建立的檔案數量
     const createdLength = useDesktopItemsManager().desktopItems.filter(item => item.app_type === 'file').length
     
@@ -67,6 +66,7 @@ const desktopMenu: MenuItem[] = [
     )
   }},
   { label: 'Display Settings', action: () => useWindowManager().openWindow('settings', 'Display Settings', 'Settings')},
+  { label: 'Arrange Desktop Items', action: () => useDesktopItemsManager().arrangeDesktopItems()},
 ]
 
 const appMenu: MenuItem[] = [
