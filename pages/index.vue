@@ -22,6 +22,7 @@
             :app="app"
           />
         </div>
+        <DesktopCat />
         <TransitionGroup name="window-pop">
           <Window
             v-for="window in store.windows"
@@ -49,6 +50,7 @@ import { useModalManager } from '~/stores/modalManager'
 import Modal from '~/components/Modal.vue'
 import RightClickMenu from '~/components/apps/RightClickMenu.vue'
 import TextEditor from '~/components/apps/TextEditor.vue' 
+import DesktopCat from '~/components/DesktopCat.vue'
 
 // 狀態新增：目前的選單內容
 const currentMenuItems = ref<MenuItem[]>([])
