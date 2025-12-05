@@ -139,6 +139,17 @@ const updateAnima = (cat: CatState) => {
 
     cat.x += Math.cos(angle) * speed
     cat.y += Math.sin(angle) * speed
+    // 限制貓咪移動範圍
+    if(canvasRef.value) {
+      const catWidth = FRAME_WIDTH * SCALE / 2
+      const catHeight = FRAME_HEIGHT * SCALE / 2
+      const maxX = canvasRef.value.width - catWidth
+      const maxY = canvasRef.value.height - catHeight
+      const minX = catWidth
+      const minY = catHeight
+      cat.x = Math.max(minX, Math.min(cat.x, maxX))
+      cat.y = Math.max(minY, Math.min(cat.y, maxY))
+    }
     cat.direction = deltaX > 0 ? 1 : -1
 
     if (cat.currentAnim !== anima) {
@@ -249,7 +260,7 @@ const handleInteraction = (e: Event) => {
 
   for (const cat of cats) {
     const dist = Math.hypot(clientX - cat.x, clientY - cat.y)
-    if (dist < 100 && dist < minDist) {
+    if (dist < 70 && dist < minDist) {
       minDist = dist
       hitCat = cat
     }
@@ -275,8 +286,23 @@ const handleInteraction = (e: Event) => {
 
     if (nearest) {
       if (nearest.isInteracting) wakeUp(nearest)
-      nearest.targetX = clientX
-      nearest.targetY = clientY
+      if (canvasRef.value) {
+        const halfW = FRAME_WIDTH * SCALE / 2
+        const halfH = FRAME_HEIGHT * SCALE / 2
+        
+        // 計算可移動的邊界範圍
+        const minX = halfW
+        const maxX = canvasRef.value.width - halfW
+        const minY = halfH
+        const maxY = canvasRef.value.height - halfH
+
+        // 將目標座標限制在範圍內
+        nearest.targetX = Math.max(minX, Math.min(clientX, maxX))
+        nearest.targetY = Math.max(minY, Math.min(clientY, maxY))
+      } else {
+        nearest.targetX = clientX
+        nearest.targetY = clientY
+      }
     }
   }
 }
