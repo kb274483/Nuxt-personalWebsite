@@ -246,6 +246,10 @@ const handleMouseMove = (e: MouseEvent, cat: CatState) => {
 }
 
 const handleInteraction = (e: Event) => {
+  // 避免右鍵觸發
+  if(e instanceof MouseEvent && e.button !== 0) return
+
+
   let clientX, clientY = 0
   if (e instanceof MouseEvent) {
     clientX = e.clientX
@@ -267,41 +271,48 @@ const handleInteraction = (e: Event) => {
   }
 
   if (hitCat) {
+    e.preventDefault()
+    e.stopPropagation()
+
     if (hitCat.currentAnim === ANIMATIONS.SLEEP) {
       wakeUp(hitCat)
     } else {
       playWithCat(hitCat)
     }
   } else {
-    let nearest: CatState | null = null
-    let nearestDist = Infinity
-
-    for (const cat of cats) {
-      const d = Math.hypot(clientX - cat.x, clientY - cat.y)
-      if (d < nearestDist) {
-        nearestDist = d
-        nearest = cat
+    const target = e.target as HTMLElement
+    // 避免點擊桌面項目時觸發
+    if(target.classList.contains('bg-cover')){
+      let nearest: CatState | null = null
+      let nearestDist = Infinity
+  
+      for (const cat of cats) {
+        const d = Math.hypot(clientX - cat.x, clientY - cat.y)
+        if (d < nearestDist) {
+          nearestDist = d
+          nearest = cat
+        }
       }
-    }
-
-    if (nearest) {
-      if (nearest.isInteracting) wakeUp(nearest)
-      if (canvasRef.value) {
-        const halfW = FRAME_WIDTH * SCALE / 2
-        const halfH = FRAME_HEIGHT * SCALE / 2
-        
-        // 計算可移動的邊界範圍
-        const minX = halfW
-        const maxX = canvasRef.value.width - halfW
-        const minY = halfH
-        const maxY = canvasRef.value.height - halfH
-
-        // 將目標座標限制在範圍內
-        nearest.targetX = Math.max(minX, Math.min(clientX, maxX))
-        nearest.targetY = Math.max(minY, Math.min(clientY, maxY))
-      } else {
-        nearest.targetX = clientX
-        nearest.targetY = clientY
+  
+      if (nearest) {
+        if (nearest.isInteracting) wakeUp(nearest)
+        if (canvasRef.value) {
+          const halfW = FRAME_WIDTH * SCALE / 2
+          const halfH = FRAME_HEIGHT * SCALE / 2
+          
+          // 計算可移動的邊界範圍
+          const minX = halfW
+          const maxX = canvasRef.value.width - halfW
+          const minY = halfH
+          const maxY = canvasRef.value.height - halfH
+  
+          // 將目標座標限制在範圍內
+          nearest.targetX = Math.max(minX, Math.min(clientX, maxX))
+          nearest.targetY = Math.max(minY, Math.min(clientY, maxY))
+        } else {
+          nearest.targetX = clientX
+          nearest.targetY = clientY
+        }
       }
     }
   }
