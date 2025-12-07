@@ -29,12 +29,14 @@ let animationFrameId: number | null = null
 const cats: CatState[] = []
 const createCat = (
   id: number,
+  name: string,
   x: number,
   y: number,
   sprite: HTMLImageElement,
   initAnimation: AnimConfig  
 ): CatState => ({
   id,
+  name,
   x,
   y,
   targetX: x,
@@ -56,14 +58,14 @@ const init = () => {
   window.addEventListener('resize', resizeCanvas)
 
   const SPRITE_SRC = [
-    '/cat_sprite_ban.png',
-    '/cat_sprite_yahoo.png',
-    '/cat_sprite_amei.png',
+    { name: 'ㄚ班', src: '/cat_sprite_ban.png' },
+    { name: 'ㄚ虎', src: '/cat_sprite_yahoo.png' },
+    { name: 'ㄚ妹', src: '/cat_sprite_amei.png' },
   ]
   const groundY = canvas.height - 100
   SPRITE_SRC.forEach((src, index) => {
     const img = new Image()
-    img.src = src
+    img.src = src.src
     img.onload = () => {
       // 所有貓共用同樣的 sprite 大小
       if (index === 0) {
@@ -73,11 +75,7 @@ const init = () => {
 
       const x = 150 + index * 180
       let cat: CatState
-      if(index === 0) {
-        cat = createCat(index + 1, x, groundY, img as HTMLImageElement, ANIMATIONS.IDLE)
-      } else {
-        cat = createCat(index + 1, x, groundY, img as HTMLImageElement, ANIMATIONS.WALK)
-      }
+      cat = createCat(index + 1, src.name, x, groundY, img as HTMLImageElement, ANIMATIONS.IDLE)
       cats.push(cat)
       
       if (!animationFrameId) {

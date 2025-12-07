@@ -11,6 +11,7 @@ export type AnimConfig = (typeof ANIMATIONS)[keyof typeof ANIMATIONS]
 
 export type CatState = {
   id: number
+  name: string
   x: number
   y: number
   targetX: number
