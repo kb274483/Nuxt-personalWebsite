@@ -11,6 +11,9 @@ import { useTemplateRef, onMounted, onBeforeUnmount } from 'vue'
 import { ANIMATIONS } from '~/types/cat.type'
 import type { CatState, AnimConfig } from '~/types/cat.type'
 import { useHead } from '#imports'
+import { useIsMobile } from '~/composables/useIsMobile'
+
+const { isMobile } = useIsMobile()
 
 // 預載入貓貓圖片
 useHead({
@@ -26,7 +29,7 @@ const SPRITE_ROWS = 6
 let FRAME_WIDTH = 128
 let FRAME_HEIGHT = 128
 
-const SCALE = 0.5      
+const SCALE = isMobile.value ? 0.25 : 0.5      
 const WALK_SPEED = 1     // 走路速度
 const RUN_SPEED = 2     // 跑步速度
 
@@ -83,7 +86,7 @@ const init = () => {
         FRAME_HEIGHT = img.height / SPRITE_ROWS
       }
 
-      const x = 150 + index * 180
+      const x = isMobile.value ? 50 + index * 100 : 150 + index * 180
       let cat: CatState
       cat = createCat(index + 1, src.name, x, groundY, img as HTMLImageElement, ANIMATIONS.IDLE)
       cats.push(cat)
