@@ -7,7 +7,7 @@
       backgroundRepeat: 'no-repeat'
     } : {}"
   >
-    <div v-if="wallpaper" class="absolute inset-0 bg-black/30 pointer-events-none"></div>
+    <div v-if="wallpaper" class="absolute inset-0 dark:bg-black/30 bg-white/30 pointer-events-none"></div>
     <slot />
   </div>
 </template>
