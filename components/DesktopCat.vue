@@ -10,6 +10,16 @@
 import { useTemplateRef, onMounted, onBeforeUnmount } from 'vue'
 import { ANIMATIONS } from '~/types/cat.type'
 import type { CatState, AnimConfig } from '~/types/cat.type'
+import { useHead } from '#imports'
+
+// 預載入貓貓圖片
+useHead({
+  link: [
+    { rel: 'preload', as: 'image', href: '/cat_sprite_ban.png' },
+    { rel: 'preload', as: 'image', href: '/cat_sprite_yahoo.png' },
+    { rel: 'preload', as: 'image', href: '/cat_sprite_amei.png' }
+  ]
+})
 
 const SPRITE_COLS = 6
 const SPRITE_ROWS = 6
