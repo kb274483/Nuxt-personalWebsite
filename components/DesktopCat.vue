@@ -50,6 +50,7 @@ const createCat = (
 ): CatState => ({
   id,
   name,
+  showName: false,
   x,
   y,
   targetX: x,
@@ -61,6 +62,7 @@ const createCat = (
   isInteracting: false,
   idleTimer: Date.now(),
   sleepTimer: 0,
+  waitTimer: 0, // 初始化
   sprite,
 })
 
@@ -110,23 +112,38 @@ const resizeCanvas = ()=>{
 }
 
 // 更新貓貓動作
-const updateAnima = (cat: CatState) => {
+// 接收 dt (delta time) 參數修正速度
+const updateAnima = (cat: CatState, dt: number) => {
   if (cat.isInteracting) { // 正在互動
     if (cat.currentAnim === ANIMATIONS.SLEEP) {
       if (Date.now() - cat.sleepTimer > 5000) {
         wakeUp(cat)
       }
     }
-    if (
-      (cat.currentAnim === ANIMATIONS.ROLL || cat.currentAnim === ANIMATIONS.ATTACK) && 
-      cat.frameIndex === ANIMATIONS.ROLL.frames - 1 || 
-      cat.currentAnim === ANIMATIONS.ATTACK
-    ) {
-      setTimeout(() => wakeUp(cat), 1000)
+    
+    // 判斷是否需要等待結束互動
+    const isRollEnd = cat.currentAnim === ANIMATIONS.ROLL
+    const isAttack = cat.currentAnim === ANIMATIONS.ATTACK
+
+    if (isRollEnd || isAttack) {
+      if (cat.waitTimer === 0) {
+        cat.waitTimer = Date.now()
+      } 
+      // 等待超過 1000ms
+      else if (Date.now() - cat.waitTimer > 1000) {
+        wakeUp(cat)
+        cat.showName = false
+      }
+    } else {
+      cat.waitTimer = 0
     }
-    advanceFrame(cat)
+
+    advanceFrame(cat, dt)
     return
   }
+
+  // 重置等待計時器 (保險起見)
+  cat.waitTimer = 0
 
   const deltaX = cat.targetX - cat.x
   const deltaY = cat.targetY - cat.y
@@ -143,13 +160,15 @@ const updateAnima = (cat: CatState) => {
       anima = ANIMATIONS.RUN
     }
 
-    if (distance > 300) {
+    if (distance > 500) {
       speed = RUN_SPEED
       anima = ANIMATIONS.JUMP
     }
 
-    cat.x += Math.cos(angle) * speed
-    cat.y += Math.sin(angle) * speed
+    // 使用 dt 修正移動速度
+    cat.x += Math.cos(angle) * speed * dt
+    cat.y += Math.sin(angle) * speed * dt
+
     // 限制貓咪移動範圍
     if(canvasRef.value) {
       const catWidth = FRAME_WIDTH * SCALE / 2
@@ -166,6 +185,7 @@ const updateAnima = (cat: CatState) => {
     if (cat.currentAnim !== anima) {
       cat.currentAnim = anima
       cat.frameIndex = 0
+      cat.tickCount = 0 // 切換動作時重置 tick
     }
 
     cat.idleTimer = Date.now()
@@ -180,16 +200,67 @@ const updateAnima = (cat: CatState) => {
     }
   }
 
-  advanceFrame(cat)
+  advanceFrame(cat, dt)
 }
 
-// 更新幀數
-const advanceFrame = (cat: CatState) => {
-  cat.tickCount++
+// 更新幀數，使用 dt 讓動畫速度在不同螢幕更新率下一致
+const advanceFrame = (cat: CatState, dt: number) => {
+  cat.tickCount += dt
   if (cat.tickCount > cat.currentAnim.speed) {
     cat.tickCount = 0
     cat.frameIndex = (cat.frameIndex + 1) % cat.currentAnim.frames
   }
+}
+
+const drawNameBubble = (cat: CatState) => {
+  if (!ctx || !cat.showName) return
+  const text = `I'm :${cat.name}`
+  const fontSize = 14
+  const padding = 8
+  
+  // 設定字體以計算寬度
+  ctx.font = `bold ${fontSize}px sans-serif`
+  const metrics = ctx.measureText(text)
+  const textWidth = metrics.width
+  
+  // 氣泡尺寸與位置
+  const bubbleWidth = textWidth + (padding * 2)
+  const bubbleHeight = fontSize + padding + 4
+  const radius = 6
+  
+  // 計算位置
+  const catHalfHeight = (FRAME_HEIGHT * SCALE) / 4
+  const x = cat.x
+  const y = cat.y - catHalfHeight - bubbleHeight
+
+  ctx.save()
+  
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.2)'
+  ctx.shadowBlur = 4
+  ctx.shadowOffsetY = 2
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.95)'
+
+  ctx.beginPath()
+  if (typeof ctx.roundRect === 'function') {
+    ctx.roundRect(x - bubbleWidth / 2, y, bubbleWidth, bubbleHeight, radius)
+  } else {
+    ctx.rect(x - bubbleWidth / 2, y, bubbleWidth, bubbleHeight)
+  }
+  ctx.fill()
+
+  ctx.beginPath()
+  ctx.moveTo(x - 5, y + bubbleHeight)
+  ctx.lineTo(x + 5, y + bubbleHeight)
+  ctx.lineTo(x, y + bubbleHeight + 6)
+  ctx.fill()
+
+  ctx.shadowColor = 'transparent'
+  ctx.fillStyle = '#333333'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(text, x, y + bubbleHeight / 2)
+
+  ctx.restore()
 }
 
 const drawCat = (cat: CatState) => {
@@ -213,14 +284,24 @@ const drawCat = (cat: CatState) => {
   )
 
   ctx.restore()
+  drawNameBubble(cat)
 }
-
-const catLoop = () => {
+let lastTime = 0
+const catLoop = (timestamp: number) => {
   if (!ctx || !canvasRef.value) return
+  
+  // 計算 Delta Time
+  if (!lastTime) lastTime = timestamp
+  const deltaTime = (timestamp - lastTime) / 16.67
+  lastTime = timestamp
+
+  // 避免切換分頁後回來 delta 過大造成瞬間移動
+  const safeDelta = Math.min(deltaTime, 5) 
+
   ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height)
 
   for (const cat of cats) {
-    updateAnima(cat)
+    updateAnima(cat, safeDelta)
     drawCat(cat)
   }
 
@@ -237,12 +318,14 @@ const wakeUp = (cat: CatState) => {
   cat.isInteracting = false
   cat.currentAnim = ANIMATIONS.IDLE
   cat.idleTimer = Date.now()
+  cat.waitTimer = 0 // 喚醒時重置計時器
 }
 
 const playWithCat = (cat: CatState) => {
   const num = Math.floor(Math.random() * 3)
   if(num%2 === 0){
     cat.currentAnim = ANIMATIONS.ROLL
+    cat.showName = true
   } else {
     cat.currentAnim = ANIMATIONS.ATTACK
   }
