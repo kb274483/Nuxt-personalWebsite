@@ -73,9 +73,9 @@ const init = () => {
   window.addEventListener('resize', resizeCanvas)
 
   const SPRITE_SRC = [
-    { name: 'ㄚ班', src: '/cat_sprite_ban.png' },
-    { name: 'ㄚ虎', src: '/cat_sprite_yahoo.png' },
-    { name: 'ㄚ妹', src: '/cat_sprite_amei.png' },
+    { name: 'A Ben', src: '/cat_sprite_ban.png' },
+    { name: 'Yahoo', src: '/cat_sprite_yahoo.png' },
+    { name: 'A Mei', src: '/cat_sprite_amei.png' },
   ]
   const groundY = canvas.height - 100
   SPRITE_SRC.forEach((src, index) => {
