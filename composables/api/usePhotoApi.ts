@@ -5,7 +5,7 @@ export const usePhotoApi = ()=>{
 
   // 緩存設定
   const CACHE_DURATION = 1000 * 60 * 60 * 24
-  const CACHE_KEY = 'photos_cache_v1.0.0'
+  const CACHE_KEY = 'photos_cache_v1.0.1'
   // Storage 名稱
   const BUCKET_NAME = 'Gallery' 
   
