@@ -214,7 +214,7 @@ const advanceFrame = (cat: CatState, dt: number) => {
 
 const drawNameBubble = (cat: CatState) => {
   if (!ctx || !cat.showName) return
-  const text = `I'm :${cat.name}`
+  const text = `I'm : ${cat.name}`
   const fontSize = 14
   const padding = 8
   
