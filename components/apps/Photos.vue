@@ -175,14 +175,11 @@
 </template>
 
 <script setup lang="ts">
-import { usePhotoApi } from '~/composables/api/usePhotoApi'
 import type { Photo } from '~/types/photo.type'
 import { X, LoaderCircle, ArrowBigRightDash, ArrowBigLeftDash } from 'lucide-vue-next'
 import { useIsMobile } from '~/composables/useIsMobile'
-
-const { getPhotos } = usePhotoApi()
-const photos = ref<Photo[]>([])
-const loading = ref<boolean>(true)
+import { usePhotoManager } from '~/stores/photoManager'
+import { formatDate } from '~/utils/common'
 
 // 判斷是否為手機
 const { isMobile } = useIsMobile()
@@ -195,6 +192,10 @@ const closeLightbox = () => {
   selectedPhoto.value = null
   imageLoaded.value = false
 }
+
+// 照片資料
+const photos = computed(() => usePhotoManager().photos)
+const loading = computed(() => usePhotoManager().loading)
 
 // 燈箱控制按鈕 state
 const isControlBtnShow = ref<boolean>(false)
@@ -232,26 +233,9 @@ const handleImageLoad = () => {
   imageLoaded.value = true
 }
 
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('zh-TW', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
-}
-
 onMounted(async () => {
-  try {
-    loading.value = true
-    const { data } = await getPhotos()
-    photos.value = data?.value || []
-  } catch (e) {
-    console.error('Load photos failed', e)
-  } finally {
-    loading.value = false
-  }
-  if (isMobile.value) {
-    isControlBtnShow.value = true
+  if(!usePhotoManager().loaded) {
+    await usePhotoManager().initialize()
   }
 })
 </script>

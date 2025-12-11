@@ -88,15 +88,14 @@ import { RotateCw, FileUser, Code, Image, Settings } from 'lucide-vue-next'
 import { useTemplateRef, onMounted } from 'vue'
 import { Sun, Moon } from 'lucide-vue-next'
 import { useWallpaper } from '~/composables/useWallpaper'
-import { usePhotoApi } from '~/composables/api/usePhotoApi'
-import type { Photo } from '~/types/photo.type'
+import { usePhotoManager } from '~/stores/photoManager'
 
 // 桌布狀態
 const { wallpaper, setWallpaper } = useWallpaper()
 // 取得照片
-const { getPhotos } = usePhotoApi()
-const photos = ref<Photo[]>([])
-const loading = ref<boolean>(true)
+
+const photos = computed(() => usePhotoManager().photos)
+const loading = computed(() => usePhotoManager().loading)
 
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
@@ -118,17 +117,11 @@ const resetDesktopItems = () => {
     useDesktopItemsManager().setupDesktopItems(appsDefault)
 }
 
-onMounted(async () => {
-    try {
-        loading.value = true
-        const { data } = await getPhotos()
-        photos.value = data?.value || []
-    } catch (e) {
-        console.error('Load photos failed', e)
-    } finally {
-        loading.value = false
-    }
-})
+    onMounted(async () => {
+        if(!usePhotoManager().loaded) {
+            await usePhotoManager().initialize()
+        }
+    })
 </script>
 
 <style scoped>

@@ -41,12 +41,14 @@
 </template>
 
 <script setup lang="ts">
-import { Code, Image, Settings, FileUser, Trash2, CircleAlert } from 'lucide-vue-next'
+import { Code, Image, Settings, FileUser, Trash2, CircleAlert, Plane } from 'lucide-vue-next'
 import { onMounted, onBeforeUnmount, computed, nextTick, ref, useTemplateRef } from 'vue'
 import { useWindowManager } from '~/stores/windowManager'
 import { useDesktopItemsManager } from '~/stores/desktopItemsManager'
 import type { MenuItem } from '~/types/menu.type'
 import { useModalManager } from '~/stores/modalManager'
+import { usePhotoManager } from '~/stores/photoManager'
+// Components
 import Modal from '~/components/Modal.vue'
 import RightClickMenu from '~/components/apps/RightClickMenu.vue'
 import TextEditor from '~/components/apps/TextEditor.vue' 
@@ -132,6 +134,7 @@ const getComponent = (name: string) => {
     case 'Code Works': return resolveComponent('AppsBrowser')
     case 'Gallery': return resolveComponent('AppsPhotos')
     case 'Settings': return resolveComponent('AppsSettings')
+    case 'Travel Path': return resolveComponent('AppsTravel')
     case 'TextEditor': return TextEditor
     default: return resolveComponent(name)
   }
@@ -190,8 +193,10 @@ onMounted(() => {
     { id: 'browser', name: 'Code Works', icon: Code, disabled_delete: true, x: 10, y: 110, width: 48, height: 48, zIndex: 1 },
     { id: 'photos', name: 'Gallery', icon: Image, disabled_delete: true, x: 10, y: 190, width: 48, height: 48, zIndex: 1 },
     { id: 'settings', name: 'Settings', icon: Settings, disabled_delete: true, x: 10, y: 270, width: 48, height: 48, zIndex: 1 },
+    { id: 'travel', name: 'Travel Path', icon: Plane, disabled_delete: true, x: 10, y: 340, width: 48, height: 48, zIndex: 1 },
   ]
   useDesktopItemsManager().setupDesktopItems(appsDefault)
+  usePhotoManager().initialize()
   window.addEventListener('contextmenu', handleContextMenu)
   window.addEventListener('click', closeRightClickMenu)
 })
