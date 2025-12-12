@@ -1,7 +1,7 @@
 <template>
-  <div class="flex h-full w-full bg-black text-white overflow-hidden relative select-none">
+  <div class="md:flex h-full w-full bg-black text-white overflow-hidden relative select-none">
     <!-- 3D 地球容器 -->
-    <div ref="globeContainer" class="flex-1 h-full relative cursor-move bg-black overflow-hidden"></div>
+    <div ref="globeContainer" class="flex-1 h-1/2 md:h-full relative cursor-move bg-black overflow-hidden"></div>
 
     <div v-if="loading" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 z-30">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
@@ -35,7 +35,7 @@
 
     <!-- 右側國家列表 -->
     <div 
-      class="w-64 flex flex-col z-20 h-full transition-transform duration-300"
+      class="md:w-64 w-full h-1/2 md:h-full flex flex-col z-20 transition-transform duration-300 md:pb-0 pb-16"
       :style="{ 
         backgroundImage: `url(${starry})`,
         backgroundSize: 'cover',
@@ -199,6 +199,8 @@ onMounted(async () => {
   if (typeof window !== 'undefined' && globeContainer.value) {
     try {
       const Globe = (await import('globe.gl')).default
+      const containerWidth = globeContainer.value.clientWidth || window.innerWidth
+      const containerHeight = globeContainer.value.clientHeight || (window.innerHeight/2)
 
       // 載入貼圖
       const textureLoader = new THREE.TextureLoader()
@@ -216,8 +218,8 @@ onMounted(async () => {
           shininess: 5
         }))
         .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
-        .width(globeContainer.value.clientWidth)
-        .height(globeContainer.value.clientHeight)
+        .width(containerWidth)
+        .height(containerHeight)
         .htmlElementsData([places[0]])
 				.htmlLat((d: any) => d.lat)
 				.htmlLng((d: any) => d.lng)
