@@ -84,7 +84,7 @@
 
 <script setup lang="ts">
 import { useDark, useToggle } from '@vueuse/core'
-import { RotateCw, FileUser, Code, Image, Settings } from 'lucide-vue-next'
+import { RotateCw, FileUser, Code, Image, Settings, Plane } from 'lucide-vue-next'
 import { useTemplateRef, onMounted } from 'vue'
 import { Sun, Moon } from 'lucide-vue-next'
 import { useWallpaper } from '~/composables/useWallpaper'
@@ -113,6 +113,7 @@ const resetDesktopItems = () => {
         { id: 'browser', name: 'Code Works', icon: Code, disabled_delete: true, x: 10, y: 110, width: 48, height: 48, zIndex: 1 },
         { id: 'photos', name: 'Gallery', icon: Image, disabled_delete: true, x: 10, y: 190, width: 48, height: 48, zIndex: 1 },
         { id: 'settings', name: 'Settings', icon: Settings, disabled_delete: true, x: 10, y: 270, width: 48, height: 48, zIndex: 1 },
+        { id: 'travel', name: 'Travel Path', icon: Plane, disabled_delete: true, x: 10, y: 340, width: 48, height: 48, zIndex: 1 },
     ]
     useDesktopItemsManager().setupDesktopItems(appsDefault)
 }
