@@ -22,10 +22,10 @@
             />
           </div>
           <div class="mt-2 px-1 flex justify-between items-center">
-            <span class="text-xs font-bold text-white shadow-black drop-shadow-md">
+            <span class="text-xs font-bold text-white shadow-black drop-shadow-xl/50">
               {{ places[activeIndex]!.name }}
             </span>
-            <span class="text-[10px] text-gray-300">
+            <span class="text-[10px] text-white shadow-black drop-shadow-xl/50">
               {{ places[activeIndex]!.date }}
             </span>
           </div>
