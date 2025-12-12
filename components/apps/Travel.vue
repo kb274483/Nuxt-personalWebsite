@@ -46,8 +46,8 @@
         backgroundColor: 'rgba(0, 0, 0, 0.6)'
       }"
     >
-      <div class="p-4 border-b border-white/10 shrink-0">
-        <h2 class="text-lg font-bold flex items-center gap-2">
+      <div class="md:py-4 px-4 py-1 border-b border-white/10 shrink-0">
+        <h2 class="text-lg font-bold flex items-center md:gap-2 gap-1">
           My Journey Path
         </h2>
         <p class="text-xs text-gray-400 mt-1">Scroll or click to explore</p>
@@ -62,10 +62,10 @@
           :key="place.name"
 					:id="place.name"
           @click="flyTo(index)"
-          class="p-4 cursor-pointer transition-all duration-200 border-l-4 hover:bg-white/5"
+          class="md:py-4 px-4 py-1 cursor-pointer transition-all duration-200 border-l-4 hover:bg-white/5"
           :class="[
             activeIndex === index 
-              ? 'border-blue-500 bg-white/10' 
+              ? 'border-slate-500/50 bg-white/10' 
               : 'border-transparent text-gray-500'
           ]"
         >
@@ -75,7 +75,9 @@
             </span>
             <span class="text-xs font-mono opacity-60">{{ place.date }}</span>
           </div>
-          <p class="text-sm text-gray-400 line-clamp-2" :class="{ 'text-gray-300': activeIndex === index }">
+          <p class="text-sm text-gray-400 line-clamp-2" 
+            :class="{ 'text-gray-300': activeIndex === index }"
+          >
             {{ place.description }}
           </p>
         </div>
@@ -131,7 +133,7 @@ const flyTo = async (index: number) => {
     globe.pointOfView({
       lat: place!.lat,
       lng: place!.lng,
-      altitude: 0.8
+      altitude: 0.9
     }, 1000)
 
     globe.htmlElementsData([place])
