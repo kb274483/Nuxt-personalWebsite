@@ -117,43 +117,55 @@ const photoManager = usePhotoManager()
 
 let globe: any = null
 let wheelTimeout: NodeJS.Timeout | null = null
+const prevIndex = ref<number | null>(null)
 
 // 飛到指定地點
 const flyTo = async (index: number) => {
   if (isTransitioning.value) return // 避免連續、快速滾動
-  
   isTransitioning.value = true
+  
   activeIndex.value = index
   const place = places[index]
+  const currentPlace = places[activeIndex.value]
+  const prevPlace = prevIndex.value !== null ? places[prevIndex.value] : null
+  prevIndex.value = activeIndex.value
   
   // 隱藏舊照片
   showPhotoBubble.value = false
 
-  if (globe) {
-    globe.pointOfView({
-      altitude: 2.5
-    }, 1000)
-    await delay(500)
-    globe.pointOfView({
-      lat: place!.lat + (isMobile.value ? 10 : 0),
-      lng: place!.lng - (isMobile.value ? 10 : 0),
-      altitude: 0.9
-    }, 1000)
-
-    globe.htmlElementsData([place])
-    globe.ringsData([place])
-				.ringColor(() => '#ffffffaa')
-				.ringMaxRadius(2)
-				.ringPropagationSpeed(4)
-				.ringRepeatPeriod(800)
-
-    showPlacePhoto(place!)
-
-    // 動畫結束後解鎖滾動
-    setTimeout(() => {
-      isTransitioning.value = false 
-    }, 1000)
+  if(prevPlace) {
+    const flightPath = {
+      startLat: prevPlace.lat,
+      startLng: prevPlace.lng,
+      endLat: currentPlace!.lat,
+      endLng: currentPlace!.lng
+    }
+    globe.arcsData([flightPath])
   }
+  globe.pointOfView({
+    altitude: 2.5
+  }, 1000)
+  await delay(500)
+  globe.pointOfView({
+    lat: place!.lat + (isMobile.value ? 10 : 0),
+    lng: place!.lng - (isMobile.value ? 10 : 0),
+    altitude: 0.9
+  }, 1000)
+
+  globe.htmlElementsData([place])
+  globe.ringsData([place])
+      .ringColor(() => '#ffffffaa')
+      .ringMaxRadius(2)
+      .ringPropagationSpeed(4)
+      .ringRepeatPeriod(800)
+
+  showPlacePhoto(place!)
+
+  // 動畫結束後解鎖滾動，清空飛行線
+  setTimeout(() => {
+    globe.arcsData([])
+    isTransitioning.value = false 
+  }, 1000)
 }
 
 // 顯示該地點的照片
@@ -223,6 +235,13 @@ onMounted(async () => {
           specular: new THREE.Color('grey'),
           shininess: 5
         }))
+        .arcsData([])
+        .arcColor(() => '#FFD700')
+        .arcDashLength(() => Math.random())
+        .arcDashGap(2)
+        .arcDashInitialGap(() => 1)
+        .arcDashAnimateTime(1500) // 動畫速度
+        .arcStroke(0.5)
         .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
         .width(containerWidth)
         .height(containerHeight)
