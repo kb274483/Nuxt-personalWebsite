@@ -24,7 +24,7 @@
 ## 技術棧 (Tech Stack)
 - **Core**: [Nuxt 4](https://nuxt.com) (Vue 3)
 - **State Management**: [Pinia](https://pinia.vuejs.org/) (視窗、Modal 與桌面物件管理)
-- **Styling**: [TailwindCSS](https://tailwindcss.com/) & Sass
+- **Styling**: [TailwindCSS](https://tailwindcss.com/)
 - **Backend / Database**: [Supabase](https://supabase.com/) (用於儲存與讀取攝影作品資料)
 - **Icons**: [Lucide Vue Next](https://lucide.dev/)
 - **Utilities**: [VueUse](https://vueuse.org/)
