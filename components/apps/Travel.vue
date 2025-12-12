@@ -11,7 +11,7 @@
     <Transition name="bubble">
       <div @click="()=>{console.log(places[activeIndex])}"
         v-if="currentPhoto && showPhotoBubble" 
-        class="absolute top-10 left-10 z-40 md:top-20 md:left-20"
+        class="absolute top-2 left-2 z-40 md:top-20 md:left-20"
       >
         <div class="bg-white/10 border border-white/30 rounded-xl p-2 shadow-2xl transform -rotate-3 transition-transform duration-500 hover:rotate-0 hover:scale-105">
           <div class="relative w-48 h-32 md:w-64 md:h-48 overflow-hidden rounded-lg bg-gray-800">
