@@ -94,6 +94,10 @@ import type { Place } from '~/types/place.type'
 import { usePhotoManager } from '~/stores/photoManager'
 import { delay } from '~/utils/common'
 import * as THREE from 'three'
+import { useIsMobile } from '~/composables/useIsMobile'
+
+// 判斷是否為手機
+const { isMobile } = useIsMobile()
 
 // 星空背景
 const starry = starryImg
@@ -131,8 +135,8 @@ const flyTo = async (index: number) => {
     }, 1000)
     await delay(500)
     globe.pointOfView({
-      lat: place!.lat,
-      lng: place!.lng,
+      lat: place!.lat + (isMobile.value ? 10 : 0),
+      lng: place!.lng - (isMobile.value ? 10 : 0),
       altitude: 0.9
     }, 1000)
 
