@@ -2,9 +2,11 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { AppItem, AppItemPosition } from '~/types/appItem.type'
 import { FileText } from 'lucide-vue-next'
+import { useIsMobile } from '~/composables/useIsMobile'
 
 type DesktopItem = AppItem & AppItemPosition
 
+const { isMobile } = useIsMobile()
 export const useDesktopItemsManager = defineStore('desktopItemsManager', () => {
   // 顯示在桌面的項目
   const desktopItems = ref<DesktopItem[]>([])
@@ -44,8 +46,8 @@ export const useDesktopItemsManager = defineStore('desktopItemsManager', () => {
       return {
         ...item,
         icon,
-        x: stored ? stored.x : item.x,
-        y: stored ? stored.y : item.y,
+        x: stored && !isMobile.value ? stored.x : item.x,
+        y: stored && !isMobile.value ? stored.y : item.y,
       }
     })
   }
