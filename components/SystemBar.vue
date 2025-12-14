@@ -8,6 +8,9 @@
       <a href="https://delirious-workshop-239.notion.site/Roy-s-Front-end-experience-note-151d63554ba44572b9c114a4bb9b1628?source=copy_link" target="_blank" class="hover:scale-110 transition-transform opacity-60 hover:opacity-100">
         <img src="@/public/notion-logo.png" alt="notion" class="w-8 h-8 bg-white rounded-full p-1" />
       </a>
+      <a href="https://www.instagram.com/royphotospace?igsh=MXJxbDFjemhmYnNmaA%3D%3D&utm_source=qr" target="_blank" class="hover:scale-110 transition-transform opacity-60 hover:opacity-100">
+        <img src="@/public/instagram-logo.png" alt="instagram" class="w-8 h-8 bg-white rounded-full p-1" />
+      </a>
     </div>
     <div class="flex items-center space-x-3">
       <div class="relative group">
