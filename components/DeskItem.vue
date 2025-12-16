@@ -1,7 +1,7 @@
 <template>
   <div 
     ref="deskItemRef"
-    class="absolute desk-item"
+    class="absolute desk-item z-10"
     :data-id="app.id"
     :data-app-type="app.app_type"
     :style="{
@@ -27,6 +27,21 @@
       class="text-xs text-center text-gray-900 dark:text-white font-medium">{{ app.name }}
     </p>
   </div>
+  <div
+    class="absolute opacity-0"
+    :id="app.id + '-shadow'"
+    :style="{
+      transform: `translate3d(${x}px, ${y}px, 0)`,
+      width: `${width}px`,
+      height: `${height}px`,
+    }"
+  >
+    <button 
+      class="group relative flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all duration-200 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/30 shadow-sm active:scale-95 hover:rotate-2 hover:scale-110"
+    >
+      <component :is="app.icon" class="w-8 h-8 text-gray-800 dark:text-white drop-shadow-md" />
+    </button>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -37,6 +52,8 @@ import { useDraggable } from '@vueuse/core'
 import type { AppItem, AppItemPosition } from '~/types/appItem.type'
 import { useBoundaryCheck } from '~/composables/useBoundaryCheck'
 import { useIsMobile } from '~/composables/useIsMobile'
+import { waapi, cubicBezier } from 'animejs'
+import { delay } from '~/utils/common'
 
 const props = defineProps<{
   app: AppItem & AppItemPosition,
@@ -77,9 +94,26 @@ useDraggable(deskItemRef, {
   }
 })
 
-const openApp = () => {
-  const componentName = props.app.component || props.app.name
+const openAnimation = (id: string) => {
+  const el = document.getElementById(id + '-shadow') as HTMLElement
+  if(!el) return
 
+  const targetX = window.innerWidth / 2
+  const targetY = window.innerHeight / 2
+  waapi.animate(el, {
+    x: [x.value, targetX],
+    y: [y.value, targetY],
+    opacity: [0, 1, 0],
+    scale: [0.5, 1.5, 1],
+    duration: 300,
+    ease: cubicBezier(0.5,0,0.9,0.3)
+  })
+}
+
+const openApp = async () => {
+  const componentName = props.app.component || props.app.name
+  openAnimation(props.app.id)
+  await delay(300)
   // 檔案類型，傳入 fileId
   const windowProps = props.app.app_type === 'file' 
     ? { fileId: props.app.id } 

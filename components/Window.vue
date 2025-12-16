@@ -63,6 +63,8 @@ import { useDraggable } from '@vueuse/core'
 import { useWindowManager, type WindowState } from '~/stores/windowManager'
 import { useBoundaryCheck } from '~/composables/useBoundaryCheck'
 import { useIsMobile } from '~/composables/useIsMobile'
+import { waapi, cubicBezier } from 'animejs'
+import { delay } from '~/utils/common'
 
 const props = defineProps<{
   windowState: WindowState
@@ -108,11 +110,18 @@ const focusWindow = () => {
   store.focusWindow(props.windowState.id)
 }
 
-const close = () => {
-  store.closeWindow(props.windowState.id)
+const close = async () => {
+  waapi.animate(windowRef.value!, {
+    opacity: [1, 0],
+    scale: [1, 0],
+    duration: 300,
+    ease: cubicBezier(0.5,0,0.9,0.3)
+  })
+  await delay(300)
+  store.closeWindow(props.windowState.id)  
 }
 
-const minimize = () => {
+const minimize = async () => {
   store.toggleMinimize(props.windowState.id)
 }
 
@@ -154,16 +163,16 @@ const startResize = (e: MouseEvent) => {
 <style scoped>
 .window-minimize-enter-active,
 .window-minimize-leave-active {
-  transition: all 0.3s ease-in-out;
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .window-minimize-leave-to {
-  opacity: 0;
-  transform: scale(0.5) translateY(200px); 
+  opacity: 0.1;
+  transform: scale(0) translateY(200px); 
 }
 
 .window-minimize-enter-from {
-  opacity: 0;
-  transform: scale(0.5) translateY(200px);
+  opacity: 0.1;
+  transform: scale(0) translateY(200px);
 }
 </style>
