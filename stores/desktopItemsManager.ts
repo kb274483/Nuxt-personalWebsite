@@ -133,6 +133,15 @@ export const useDesktopItemsManager = defineStore('desktopItemsManager', () => {
     })
   }
 
+  // 取得桌面項目座標
+  const getDesktopItemPosition = (id: string) => {
+    const item = desktopItems.value.find(item => item.id === id)
+    if (item) {
+      return { x: item.x, y: item.y }
+    }
+    return { x: 0, y: 0 }
+  }
+
   const roundTo10 = (num: number) => {
     return Math.round(num / 10) * 10;
   }
@@ -147,6 +156,7 @@ export const useDesktopItemsManager = defineStore('desktopItemsManager', () => {
     saveUserCreated,
     renameFile,
     setEditStatus,
-    arrangeDesktopItems
+    arrangeDesktopItems,
+    getDesktopItemPosition
   }
 })
