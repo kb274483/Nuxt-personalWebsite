@@ -79,7 +79,7 @@
                         v-for="photo in photos" 
                         :key="photo.id"
                         @click="setWallpaper(photo.src)"
-                        class="aspect-square relative rounded-lg border-2 transition-all p-4"
+                        class="aspect-square relative rounded-lg border-2 transition-all p-1 sm:p-4"
                         :class="wallpaper === photo.src ? 'border-green-500 ring-2 ring-green-500/20' : 'border-transparent hover:border-gray-300'"
                     >
                         <img 
