@@ -1,6 +1,7 @@
 <template>
-  <div class="relative h-full flex flex-col bg-gray-50 dark:bg-stone-800/80 text-gray-900 dark:text-gray-100 transition-colors duration-300">
-     <div class="p-4 flex flex-col flex-1 overflow-hidden pb-14">
+  <div ref="settingWindowRef"
+    class="relative h-full flex flex-col bg-gray-50 dark:bg-stone-800/80 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+    <div class="p-4 flex flex-col flex-1 overflow-hidden pb-14">
         <h2 class="text-lg font-bold mb-2 flex-shrink-0">System Settings</h2>
 
         <div class="bg-white dark:bg-stone-700 rounded-lg shadow px-4 py-2 mb-4 transition-colors duration-300 flex-shrink-0">
@@ -9,9 +10,14 @@
             </h3>
             <div class="flex items-center justify-between py-2 border-b dark:border-gray-600 last:border-0">
                 <span>IS DANGEROUS</span>
-                <button @click="useGravityManager().toggleGravity()"
-                    class="group w-16 h-10 rounded relative cursor-pointer transition-colors duration-200 focus:outline-none p-2 hover:bg-red-500/70 dark:hover:bg-red-500/70 active:scale-95"
-                    :class="useGravityManager().isGravityEnabled ? 'bg-red-500/70 dark:bg-red-500/70' : 'bg-gray-200 dark:bg-stone-500'"
+                <button ref="tricksyButtonRef"
+                    @click="handleGravity()"
+                    @mouseenter="tricksyButton()"
+                    class="group w-16 h-10 rounded relative cursor-pointer transition-all duration-300 ease-in-out focus:outline-none p-2 hover:bg-red-500/70 dark:hover:bg-red-500/70 active:scale-95 z-50"
+                    :class="useGravityManager().isGravityEnabled ?
+                        'bg-red-500/70 dark:bg-red-500/70' :
+                        'bg-gray-200 dark:bg-stone-500'"
+                    :style="tricksyButtonStyle"
                 >
                     <Skull class="w-6 h-6 mx-auto group-hover:animate-bounce " ref="toggleGravityRef" />
                 </button>
@@ -116,6 +122,13 @@ const loading = computed(() => usePhotoManager().loading)
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
 
+// 不能按的按鈕
+const tricksyRunCount = ref(0)
+const tricksyButtonStyle = ref({})
+const currentTransform = ref({ x: 0, y: 0 })
+
+const settingWindowRef = useTemplateRef<HTMLDivElement>('settingWindowRef')
+const tricksyButtonRef = useTemplateRef<HTMLButtonElement>('tricksyButtonRef')
 const resetDesktopItemsRef = useTemplateRef<HTMLButtonElement>('resetDesktopItemsRef')
 const resetDesktopItems = () => {
     resetDesktopItemsRef.value?.classList.add('animate-spin')
@@ -134,11 +147,86 @@ const resetDesktopItems = () => {
     useDesktopItemsManager().setupDesktopItems(appsDefault)
 }
 
-    onMounted(async () => {
-        if(!usePhotoManager().loaded) {
-            await usePhotoManager().initialize()
+const tricksyButton = () => {
+    if (tricksyRunCount.value >= 7) return // 追七次就好
+    const container = settingWindowRef.value
+    const button = tricksyButtonRef.value
+    if (!container || !button) return
+
+    const containerRect = container.getBoundingClientRect()
+    const buttonRect = button.getBoundingClientRect()
+    
+    // 當前相對於容器的左上角位置
+    const currentLeft = buttonRect.left - containerRect.left
+    const currentTop = buttonRect.top - containerRect.top
+    
+    // 隨機移動距離
+    const moveRange = 150
+    let nextTx = 0
+    let nextTy = 0
+    let safe = false
+    let attempts = 0
+
+    const originalLeft = currentLeft - currentTransform.value.x
+    const originalTop = currentTop - currentTransform.value.y
+
+    while (!safe && attempts < 10) {
+        const deltaX = (Math.random() - 0.5) * moveRange * 2
+        const deltaY = (Math.random() - 0.5) * moveRange * 2
+        
+        // 先計算位移量
+        const potentialTx = currentTransform.value.x + deltaX
+        const potentialTy = currentTransform.value.y + deltaY
+        
+        // 加上位移量後，實際在容器中的位置
+        const potentialLeft = originalLeft + potentialTx
+        const potentialTop = originalTop + potentialTy
+        
+        // 檢查邊界，保留 20px padding
+        const padding = 20
+        const maxLeft = containerRect.width - buttonRect.width - padding
+        const maxTop = containerRect.height - buttonRect.height - padding
+        
+        if (potentialLeft > padding && potentialLeft < maxLeft &&
+            potentialTop > padding && potentialTop < maxTop)
+        {
+            nextTx = potentialTx
+            nextTy = potentialTy
+            safe = true
         }
-    })
+        attempts++
+    }
+
+    if (safe) {
+        currentTransform.value = { x: nextTx, y: nextTy }
+        tricksyButtonStyle.value = {
+            transform: `translate3d(${nextTx}px, ${nextTy}px, 0)`
+        }
+        tricksyRunCount.value++
+    } else {
+        const resetTx = (Math.random() - 0.5) * 150
+        const resetTy = (Math.random() - 0.5) * 150
+        currentTransform.value = { x: resetTx, y: resetTy }
+        tricksyButtonStyle.value = {
+             transform: `translate3d(${resetTx}px, ${resetTy}px, 0)`
+        }
+    }
+}
+
+const handleGravity = ()=>{
+    useGravityManager().toggleGravity()
+    tricksyRunCount.value = 0
+    currentTransform.value = { x: 0, y: 0 }
+    tricksyButtonStyle.value = {
+        transform: `translate3d(0, 0, 0)`
+    }
+}
+
+onMounted(async () => {
+    if(!usePhotoManager().loaded) {
+        await usePhotoManager().initialize()
+    }
+})
 </script>
 
 <style scoped>
