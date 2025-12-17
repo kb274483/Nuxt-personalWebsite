@@ -66,7 +66,8 @@ const desktopMenu: MenuItem[] = [
     // 建立預設名稱與內容
     useDesktopItemsManager().addDesktopItem(`
       New Text File (${createdLength + 1}).txt`,
-      `This is a new text file created on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`
+      `This is a new text file created on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`,
+      createdLength * 90
     )
   }},
   { label: 'Display Settings', action: () => useWindowManager().openWindow('settings', 'Display Settings', 'Settings')},

@@ -67,7 +67,7 @@ export const useDesktopItemsManager = defineStore('desktopItemsManager', () => {
     }
   }
 
-  const addDesktopItem = (name: string, content: string = '') => {
+  const addDesktopItem = (name: string, content: string = '', offsetY: number = 30) => {
     const newItem: DesktopItem = {
       id: `file-${Date.now()}`,
       name,
@@ -75,8 +75,8 @@ export const useDesktopItemsManager = defineStore('desktopItemsManager', () => {
       content,
       component: 'TextEditor',
       app_type: 'file',
-      x: 50,
-      y: 50,
+      x: 70,
+      y: 30 + offsetY,
       width: 48,
       height: 48,
       zIndex: 1,

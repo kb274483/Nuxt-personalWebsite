@@ -1,9 +1,24 @@
 <template>
   <div class="relative h-full flex flex-col bg-gray-50 dark:bg-stone-800/80 text-gray-900 dark:text-gray-100 transition-colors duration-300">
      <div class="p-4 flex flex-col flex-1 overflow-hidden pb-14">
-        <h2 class="text-lg font-bold mb-4 flex-shrink-0">System Settings</h2>
+        <h2 class="text-lg font-bold mb-2 flex-shrink-0">System Settings</h2>
 
-        <div class="bg-white dark:bg-stone-700 rounded-lg shadow p-4 mb-4 transition-colors duration-300 flex-shrink-0">
+        <div class="bg-white dark:bg-stone-700 rounded-lg shadow px-4 py-2 mb-4 transition-colors duration-300 flex-shrink-0">
+            <h3 class="font-semibold mb-2 text-sm text-gray-500 dark:text-gray-400 uppercase">
+                Do Not Touch This Button
+            </h3>
+            <div class="flex items-center justify-between py-2 border-b dark:border-gray-600 last:border-0">
+                <span>IS DANGEROUS</span>
+                <button @click="useGravityManager().toggleGravity()"
+                    class="group w-16 h-10 rounded relative cursor-pointer transition-colors duration-200 focus:outline-none p-2 hover:bg-red-500/70 dark:hover:bg-red-500/70 active:scale-95"
+                    :class="useGravityManager().isGravityEnabled ? 'bg-red-500/70 dark:bg-red-500/70' : 'bg-gray-200 dark:bg-stone-500'"
+                >
+                    <Skull class="w-6 h-6 mx-auto group-hover:animate-bounce " ref="toggleGravityRef" />
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-stone-700 rounded-lg shadow px-4 py-2 mb-4 transition-colors duration-300 flex-shrink-0">
             <h3 class="font-semibold mb-2 text-sm text-gray-500 dark:text-gray-400 uppercase">Appearance</h3>
             <div class="flex items-center justify-between py-2 border-b dark:border-gray-600 last:border-0">
                 <span>Dark Mode</span>
@@ -25,15 +40,15 @@
                 </div>
             </div>
         </div>
-        <div class="bg-white dark:bg-stone-700 rounded-lg shadow p-4 mb-4 transition-colors duration-300 flex-shrink-0">
+        <div class="bg-white dark:bg-stone-700 rounded-lg shadow px-4 py-2 mb-4 transition-colors duration-300 flex-shrink-0">
             <h3 class="font-semibold mb-2 text-sm text-gray-500 dark:text-gray-400 uppercase">Desktop Items</h3>
 
             <div class="flex items-center justify-between py-2 border-b dark:border-gray-600 last:border-0">
                 <span>Reset</span>
                 <button @click="resetDesktopItems()"
-                    class="w-12 h-8 rounded relative cursor-pointer transition-colors duration-200 focus:outline-none bg-gray-200 dark:bg-stone-500 p-2 hover:bg-gray-300 dark:hover:bg-stone-600 active:scale-95"
+                    class="w-16 h-10 rounded relative cursor-pointer transition-colors duration-200 focus:outline-none bg-gray-200 dark:bg-stone-500 p-2 hover:bg-gray-300 dark:hover:bg-stone-600 active:scale-95"
                 >
-                    <RotateCw class="w-full h-full" ref="resetDesktopItemsRef" />
+                    <RotateCw class="w-6 h-6 mx-auto" ref="resetDesktopItemsRef" />
                 </button>
             </div>
         </div>
@@ -84,11 +99,12 @@
 
 <script setup lang="ts">
 import { useDark, useToggle } from '@vueuse/core'
-import { RotateCw, FileUser, Code, Image, Settings, Plane } from 'lucide-vue-next'
+import { RotateCw, FileUser, Code, Image, Settings, Plane, Skull } from 'lucide-vue-next'
 import { useTemplateRef, onMounted } from 'vue'
 import { Sun, Moon } from 'lucide-vue-next'
 import { useWallpaper } from '~/composables/useWallpaper'
 import { usePhotoManager } from '~/stores/photoManager'
+import { useGravityManager } from '~/stores/gravityManager'
 
 // 桌布狀態
 const { wallpaper, setWallpaper } = useWallpaper()

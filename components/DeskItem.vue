@@ -54,6 +54,7 @@ import { useBoundaryCheck } from '~/composables/useBoundaryCheck'
 import { useIsMobile } from '~/composables/useIsMobile'
 import { waapi, cubicBezier } from 'animejs'
 import { delay } from '~/utils/common'
+import { useGravityManager } from '~/stores/gravityManager'
 
 const props = defineProps<{
   app: AppItem & AppItemPosition,
@@ -66,9 +67,53 @@ const handleClick = () => {
     openApp()
   }
 }
-// 
+// Pinia Store
 const store = useWindowManager()
+// 桌面 ITEM DOM
 const deskItemRef = useTemplateRef<HTMLElement>('deskItemRef')
+// 重力開關 and State
+const gravityManager = useGravityManager()
+const speed = { x: 0, y: 0 }
+const gravity = 0.8
+const bounce = 0.6
+const friction = 0.95
+let isDragging = false // 是否正在被拖曳
+let lastPos = { x: 0, y: 0 } // 上一幀的位置，用來計算拋擲速度
+let gravityRAfId: number
+
+const physicsCalc = () => {
+  if (!gravityManager.isGravityEnabled) return
+  if (!isDragging) {
+    speed.y += gravity
+    let nextY = y.value + speed.y
+    let nextX = x.value + speed.x
+    // Border
+    const itemHeight = height.value as number
+    const itemWidth = width.value as number
+    const floor = window.innerHeight - itemHeight - 50
+    const leftBorder = 0
+    const rightBorder = window.innerWidth - itemWidth - 10
+    // 接觸地面
+    if( nextY > floor ){
+      nextY = floor
+      speed.y *= -bounce
+      speed.x *= friction
+      if(Math.abs(speed.y) < gravity) speed.y = 0
+    }
+    // 接觸牆壁
+    if (nextX > rightBorder) {
+      nextX = rightBorder
+      speed.x *= -bounce
+    } else if (nextX < leftBorder) {
+      nextX = leftBorder
+      speed.x *= -bounce
+    }
+    x.value = nextX
+    y.value = nextY
+  }
+  gravityRAfId = requestAnimationFrame(physicsCalc)
+}
+
 
 const x = ref<number>(props.app.x)
 const y = ref<number>(props.app.y)
@@ -83,16 +128,56 @@ useDraggable(deskItemRef, {
   handle: deskItemRef,
   disabled: computed(() => isMobile.value),
 
+  onStart: () => {
+    if(gravityManager.isGravityEnabled) {
+      isDragging = true
+      speed.x = 0
+      speed.y = 0
+      lastPos = { x: x.value, y: y.value }
+    }
+  },
   onMove: (position) => {
     const { x: newX, y: newY } = useBoundaryCheck().checkBoundary(position.x, position.y, (width.value as number) , (height.value as number))
+
+    if(gravityManager.isGravityEnabled) {
+      speed.x = position.x - lastPos.x
+      speed.y = position.y - lastPos.y
+      lastPos = { x: position.x, y: position.y }
+    }
     x.value = newX - ((width.value as number) / 2)
     y.value = newY - (height.value as number)
   },
   onEnd: () => {
-    if (!deskItemRef.value) return
-    useDesktopItemsManager().updateDesktopItemPosition(props.app.id, x.value, y.value)
+    if (gravityManager.isGravityEnabled) {
+      isDragging = false
+    } else {
+      if (!deskItemRef.value) return
+      useDesktopItemsManager().updateDesktopItemPosition(props.app.id, x.value, y.value)
+    }
   }
 })
+
+watch(()=> gravityManager.isGravityEnabled, (newVal) => {
+  if (newVal) {
+    speed.x = (Math.random() - 0.5) * 15 // 隨機水平速度
+    speed.y = -5 // 初始速度，向下拋擲
+    physicsCalc()
+  } else {
+    cancelAnimationFrame(gravityRAfId)
+    isDragging = false
+    
+    waapi.animate(deskItemRef.value!, {
+      x: [x.value, props.app.x],
+      y: [y.value, props.app.y],
+      duration: 500,
+      easing: 'cubic-bezier(0.25, 1, 0.5, 1)'
+    })
+    x.value = props.app.x
+    y.value = props.app.y
+    speed.x = 0
+    speed.y = 0
+  }
+}, { immediate: true }) // 修正新項目剛建立時，不會有重力效果
 
 const openAnimation = (id: string) => {
   const el = document.getElementById(id + '-shadow') as HTMLElement
