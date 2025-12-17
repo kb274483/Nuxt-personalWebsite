@@ -7,13 +7,14 @@
 </template>
 
 <script setup lang="ts">
-import { useTemplateRef, onMounted, onBeforeUnmount } from 'vue'
+import { useTemplateRef, onMounted, onBeforeUnmount, computed } from 'vue'
 import { ANIMATIONS } from '~/types/cat.type'
 import type { CatState, AnimConfig } from '~/types/cat.type'
 import { useHead } from '#imports'
 import { useIsMobile } from '~/composables/useIsMobile'
 
 const { isMobile } = useIsMobile()
+
 
 // 預載入貓貓圖片
 useHead({
@@ -29,9 +30,12 @@ const SPRITE_ROWS = 6
 let FRAME_WIDTH = 128
 let FRAME_HEIGHT = 128
 
-const SCALE = isMobile.value ? 0.25 : 0.5      
-const WALK_SPEED = 1     // 走路速度
-const RUN_SPEED = 2     // 跑步速度
+// 基礎縮放比例
+const BASE_SCALE = computed(() => isMobile.value ? 0.25 : 0.5)
+const GIANT_SCALE_MULTIPLIER = 5 // 巨大化倍率
+
+const WALK_SPEED = 1     
+const RUN_SPEED = 2     
 
 // canvas State
 const canvasRef = useTemplateRef<HTMLCanvasElement>('canvasRef')
@@ -40,6 +44,7 @@ let animationFrameId: number | null = null
 
 // 貓貓 State
 const cats: CatState[] = []
+
 const createCat = (
   id: number,
   name: string,
@@ -62,8 +67,15 @@ const createCat = (
   isInteracting: false,
   idleTimer: Date.now(),
   sleepTimer: 0,
-  waitTimer: 0, // 初始化
+  waitTimer: 0, 
   sprite,
+  clickCount: 0,
+  // 新增屬性
+  scale: BASE_SCALE.value,
+  targetScale: BASE_SCALE.value,
+  originalScale: BASE_SCALE.value,
+  isEvolving: false,
+  evolutionTimer: 0
 })
 
 const init = () => {
@@ -77,12 +89,13 @@ const init = () => {
     { name: 'Yahoo', src: '/cat_sprite_yahoo.png' },
     { name: 'A Mei', src: '/cat_sprite_amei.png' },
   ]
-  const groundY = canvas.height - 100
+  
+  const groundY = canvas.height - 50 
+
   SPRITE_SRC.forEach((src, index) => {
     const img = new Image()
     img.src = src.src
     img.onload = () => {
-      // 所有貓共用同樣的 sprite 大小
       if (index === 0) {
         FRAME_WIDTH = img.width / SPRITE_COLS
         FRAME_HEIGHT = img.height / SPRITE_ROWS
@@ -106,22 +119,35 @@ const init = () => {
 
 const resizeCanvas = ()=>{
   if(!canvasRef.value) return
-
   canvasRef.value.width = window.innerWidth
   canvasRef.value.height = window.innerHeight
 }
 
-// 更新貓貓動作
-// 接收 dt (delta time) 參數修正速度
+// 更新貓貓動作與狀態
 const updateAnima = (cat: CatState, dt: number) => {
-  if (cat.isInteracting) { // 正在互動
+  // 處理縮放動畫 (Lerp)
+  // 讓 scale 慢慢接近 targetScale
+  const scaleSpeed = 0.1 * dt
+  const diff = cat.targetScale - cat.scale
+  if (Math.abs(diff) > 0.01) {
+    cat.scale += diff * scaleSpeed
+  } else {
+    cat.scale = cat.targetScale
+  }
+
+  // 如果正在進化中，不進行移動邏輯
+  if (cat.isEvolving) {
+    // 進化閃爍邏輯由 drawCat 處理
+    return
+  }
+
+  if (cat.isInteracting) { 
     if (cat.currentAnim === ANIMATIONS.SLEEP) {
       if (Date.now() - cat.sleepTimer > 5000) {
         wakeUp(cat)
       }
     }
     
-    // 判斷是否需要等待結束互動
     const isRollEnd = cat.currentAnim === ANIMATIONS.ROLL
     const isAttack = cat.currentAnim === ANIMATIONS.ATTACK
 
@@ -129,7 +155,6 @@ const updateAnima = (cat: CatState, dt: number) => {
       if (cat.waitTimer === 0) {
         cat.waitTimer = Date.now()
       } 
-      // 等待超過 1000ms
       else if (Date.now() - cat.waitTimer > 1000) {
         wakeUp(cat)
         cat.showName = false
@@ -142,7 +167,6 @@ const updateAnima = (cat: CatState, dt: number) => {
     return
   }
 
-  // 重置等待計時器 (保險起見)
   cat.waitTimer = 0
 
   const deltaX = cat.targetX - cat.x
@@ -165,18 +189,19 @@ const updateAnima = (cat: CatState, dt: number) => {
       anima = ANIMATIONS.JUMP
     }
 
-    // 使用 dt 修正移動速度
     cat.x += Math.cos(angle) * speed * dt
     cat.y += Math.sin(angle) * speed * dt
 
     // 限制貓咪移動範圍
     if(canvasRef.value) {
-      const catWidth = FRAME_WIDTH * SCALE / 2
-      const catHeight = FRAME_HEIGHT * SCALE / 2
-      const maxX = canvasRef.value.width - catWidth
-      const maxY = canvasRef.value.height - catHeight
-      const minX = catWidth
-      const minY = catHeight
+      // 根據當前大小計算邊界，避免穿幫
+      const catW = FRAME_WIDTH * cat.scale / 2
+      const maxX = canvasRef.value.width - catW
+      const minX = catW
+      // 腳底的極限
+      const maxY = canvasRef.value.height
+      const minY = canvasRef.value.height - 200
+      
       cat.x = Math.max(minX, Math.min(cat.x, maxX))
       cat.y = Math.max(minY, Math.min(cat.y, maxY))
     }
@@ -185,7 +210,7 @@ const updateAnima = (cat: CatState, dt: number) => {
     if (cat.currentAnim !== anima) {
       cat.currentAnim = anima
       cat.frameIndex = 0
-      cat.tickCount = 0 // 切換動作時重置 tick
+      cat.tickCount = 0 
     }
 
     cat.idleTimer = Date.now()
@@ -203,7 +228,6 @@ const updateAnima = (cat: CatState, dt: number) => {
   advanceFrame(cat, dt)
 }
 
-// 更新幀數，使用 dt 讓動畫速度在不同螢幕更新率下一致
 const advanceFrame = (cat: CatState, dt: number) => {
   cat.tickCount += dt
   if (cat.tickCount > cat.currentAnim.speed) {
@@ -218,20 +242,19 @@ const drawNameBubble = (cat: CatState) => {
   const fontSize = 14
   const padding = 8
   
-  // 設定字體以計算寬度
   ctx.font = `bold ${fontSize}px sans-serif`
   const metrics = ctx.measureText(text)
   const textWidth = metrics.width
   
-  // 氣泡尺寸與位置
   const bubbleWidth = textWidth + (padding * 2)
   const bubbleHeight = fontSize + padding + 4
   const radius = 6
   
-  // 計算位置
-  const catHalfHeight = (FRAME_HEIGHT * SCALE) / 4
+  // 計算位置：根據當前 scale 動態調整高度
+  const catHeight = FRAME_HEIGHT * cat.scale
   const x = cat.x
-  const y = cat.y - catHalfHeight - bubbleHeight
+  // 氣泡顯示在貓頭頂 (y 是腳底，所以減去高度)
+  const y = cat.y - catHeight - bubbleHeight - 10
 
   ctx.save()
   
@@ -248,6 +271,7 @@ const drawNameBubble = (cat: CatState) => {
   }
   ctx.fill()
 
+  // 三角形箭頭
   ctx.beginPath()
   ctx.moveTo(x - 5, y + bubbleHeight)
   ctx.lineTo(x + 5, y + bubbleHeight)
@@ -263,65 +287,101 @@ const drawNameBubble = (cat: CatState) => {
   ctx.restore()
 }
 
-const drawCat = (cat: CatState) => {
+const drawCat = (cat: CatState, timestamp: number) => {
   if (!ctx || !cat.sprite || !canvasRef.value) return
 
   const sx = cat.frameIndex * FRAME_WIDTH
   const sy = cat.currentAnim.row * FRAME_HEIGHT
 
+  // 繪製參數
+  const dWidth = FRAME_WIDTH * cat.scale
+  const dHeight = FRAME_HEIGHT * cat.scale
+
   ctx.save()
+  
+  // 修正：將原點移動到貓的「腳下位置 (x, y)」
   ctx.translate(cat.x, cat.y)
 
+  // 處理方向
   if (cat.direction === -1) ctx.scale(-1, 1)
 
-  ctx.drawImage(
-    cat.sprite,
-    sx, sy, FRAME_WIDTH, FRAME_HEIGHT,
-    -FRAME_WIDTH * SCALE / 2,
-    -FRAME_HEIGHT * SCALE / 2,
-    FRAME_WIDTH * SCALE,
-    FRAME_HEIGHT * SCALE
-  )
+  // 繪製貓咪
+  const drawX = -dWidth / 2
+  const drawY = -dHeight 
+
+  // --- 進化特效 ---
+  if (cat.isEvolving) {
+    // 震動效果
+    const shake = Math.sin(timestamp / 20) * 5
+    ctx.translate(shake, 0)
+
+    // 繪製原始貓咪
+    ctx.drawImage(
+      cat.sprite,
+      sx, sy, FRAME_WIDTH, FRAME_HEIGHT,
+      drawX, drawY, dWidth, dHeight
+    )
+
+    // 疊加白色閃爍
+    // 利用 source-atop 只在貓咪不透明區域繪製白色
+    ctx.globalCompositeOperation = 'source-atop'
+    
+    // 閃爍頻率
+    const flashIntensity = (Math.sin(timestamp / 50) + 1) / 2 // 0 ~ 1
+    ctx.fillStyle = `rgba(255, 255, 255, ${flashIntensity})`
+    
+    ctx.fillRect(drawX, drawY, dWidth, dHeight)
+    
+  } else {
+    // 正常繪製
+    ctx.drawImage(
+      cat.sprite,
+      sx, sy, FRAME_WIDTH, FRAME_HEIGHT,
+      drawX, drawY, dWidth, dHeight
+    )
+  }
 
   ctx.restore()
   drawNameBubble(cat)
 }
+
 let lastTime = 0
 const catLoop = (timestamp: number) => {
   if (!ctx || !canvasRef.value) return
   
-  // 計算 Delta Time
   if (!lastTime) lastTime = timestamp
   const deltaTime = (timestamp - lastTime) / 16.67
   lastTime = timestamp
 
-  // 避免切換分頁後回來 delta 過大造成瞬間移動
   const safeDelta = Math.min(deltaTime, 5) 
 
   ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height)
 
   for (const cat of cats) {
     updateAnima(cat, safeDelta)
-    drawCat(cat)
+    drawCat(cat, timestamp)
   }
 
   animationFrameId = requestAnimationFrame(catLoop)
 }
-// 貓貓互動相關 
+
 const startSleep = (cat: CatState) => {
+  if(cat.isEvolving) return
   cat.isInteracting = true
   cat.currentAnim = ANIMATIONS.SLEEP
   cat.sleepTimer = Date.now()
 }
 
 const wakeUp = (cat: CatState) => {
+  if(cat.isEvolving) return
   cat.isInteracting = false
   cat.currentAnim = ANIMATIONS.IDLE
   cat.idleTimer = Date.now()
-  cat.waitTimer = 0 // 喚醒時重置計時器
+  cat.waitTimer = 0 
 }
 
 const playWithCat = (cat: CatState) => {
+  if(cat.isEvolving) return 
   const num = Math.floor(Math.random() * 3)
   if(num%2 === 0){
     cat.currentAnim = ANIMATIONS.ROLL
@@ -340,9 +400,7 @@ const handleMouseMove = (e: MouseEvent, cat: CatState) => {
 }
 
 const handleInteraction = (e: Event) => {
-  // 避免右鍵觸發
   if(e instanceof MouseEvent && e.button !== 0) return
-
 
   let clientX, clientY = 0
   if (e instanceof MouseEvent) {
@@ -357,8 +415,14 @@ const handleInteraction = (e: Event) => {
   let minDist = Infinity
 
   for (const cat of cats) {
-    const dist = Math.hypot(clientX - cat.x, clientY - cat.y)
-    if (dist < 70 && dist < minDist) {
+    const hitRadius = 70 * (cat.scale / cat.originalScale)
+    
+    // cat.y 是腳底，中心點大約在 y - height/2
+    const centerY = cat.y - (FRAME_HEIGHT * cat.scale / 2)
+    
+    const dist = Math.hypot(clientX - cat.x, clientY - centerY)
+    
+    if (dist < hitRadius && dist < minDist) {
       minDist = dist
       hitCat = cat
     }
@@ -368,20 +432,34 @@ const handleInteraction = (e: Event) => {
     e.preventDefault()
     e.stopPropagation()
 
+    // 如果正在進化，點擊無效
+    if (hitCat.isEvolving) return
+
     if (hitCat.currentAnim === ANIMATIONS.SLEEP) {
       wakeUp(hitCat)
     } else {
       playWithCat(hitCat)
     }
+    
+    hitCat.clickCount++
+    
+    // 進化彩蛋
+    if(hitCat.clickCount >= 5){
+      hitCat.clickCount = 0
+      triggerEvolution(hitCat)
+    }
   } else {
+    // 移動邏輯 (點擊地板)
     const target = e.target as HTMLElement
-    // 避免點擊桌面項目時觸發
     if(target.classList.contains('bg-cover')){
       let nearest: CatState | null = null
       let nearestDist = Infinity
   
       for (const cat of cats) {
-        const d = Math.hypot(clientX - cat.x, clientY - cat.y)
+        if(cat.isEvolving) continue // 進化中的貓不動
+
+        const centerY = cat.y - (FRAME_HEIGHT * cat.scale / 2)
+        const d = Math.hypot(clientX - cat.x, clientY - centerY)
         if (d < nearestDist) {
           nearestDist = d
           nearest = cat
@@ -391,25 +469,37 @@ const handleInteraction = (e: Event) => {
       if (nearest) {
         if (nearest.isInteracting) wakeUp(nearest)
         if (canvasRef.value) {
-          const halfW = FRAME_WIDTH * SCALE / 2
-          const halfH = FRAME_HEIGHT * SCALE / 2
-          
-          // 計算可移動的邊界範圍
+          const halfW = FRAME_WIDTH * nearest.scale / 2
           const minX = halfW
           const maxX = canvasRef.value.width - halfW
-          const minY = halfH
-          const maxY = canvasRef.value.height - halfH
-  
-          // 將目標座標限制在範圍內
+          // 移動目標保持在同一水平面上
           nearest.targetX = Math.max(minX, Math.min(clientX, maxX))
-          nearest.targetY = Math.max(minY, Math.min(clientY, maxY))
         } else {
           nearest.targetX = clientX
-          nearest.targetY = clientY
         }
       }
     }
   }
+}
+
+// 觸發進化
+const triggerEvolution = (cat: CatState) => {
+  cat.isEvolving = true
+  cat.isInteracting = true // 鎖定狀態
+  
+  // 播放進化前搖 (閃爍) - 2秒
+  setTimeout(() => {
+    // 瞬間變大 / 開始變大
+    cat.isEvolving = false // 停止閃爍
+    cat.targetScale = cat.originalScale * GIANT_SCALE_MULTIPLIER
+    
+    // 維持巨大化一段時間後變回來
+    setTimeout(() => {
+      cat.targetScale = cat.originalScale
+      wakeUp(cat) // 解除鎖定，變回原樣
+    }, 8000)
+    
+  }, 2000)
 }
 
 onMounted(() => {

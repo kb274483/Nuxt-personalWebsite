@@ -27,6 +27,12 @@ export type CatState = {
   sleepTimer: number
   waitTimer: number
   sprite: HTMLImageElement
+  clickCount: number
+  scale: number        // 當前縮放比例
+  targetScale: number  // 目標縮放比例
+  isEvolving: boolean  // 是否正在進化動畫中
+  evolutionTimer: number // 進化動畫計時器
+  originalScale: number // 原始縮放比例
 }
 
 export const cats: CatState[] = []
