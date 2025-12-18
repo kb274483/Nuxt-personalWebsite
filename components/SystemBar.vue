@@ -2,15 +2,15 @@
   <div class="w-full h-12 bg-slate-400/70 dark:bg-stone-600/50 backdrop-blur-md text-gray-900 dark:text-white flex items-center justify-between px-4 text-xs font-medium select-none z-50 fixed top-0 left-0 border-b border-gray-200/50 dark:border-white/10 shadow-sm transition-colors duration-300">
     <div class="flex items-center space-x-4">
       <span class="font-bold text-base">Roy Space</span>
-      <a href="https://github.com/kb274483" target="_blank" class="hover:scale-110 transition-transform opacity-60 hover:opacity-100">
-        <img src="@/public/github-logo.png" alt="github" class="w-8 h-8 bg-white rounded-full" />
-      </a>
-      <a href="https://delirious-workshop-239.notion.site/Roy-s-Front-end-experience-note-151d63554ba44572b9c114a4bb9b1628?source=copy_link" target="_blank" class="hover:scale-110 transition-transform opacity-60 hover:opacity-100">
-        <img src="@/public/notion-logo.png" alt="notion" class="w-8 h-8 bg-white rounded-full p-1" />
-      </a>
-      <a href="https://www.instagram.com/royphotospace?igsh=MXJxbDFjemhmYnNmaA%3D%3D&utm_source=qr" target="_blank" class="hover:scale-110 transition-transform opacity-60 hover:opacity-100">
-        <img src="@/public/instagram-logo.png" alt="instagram" class="w-8 h-8 bg-white rounded-full p-1" />
-      </a>
+      <div class="flex items-center gap-4">
+        <AnimationMenu 
+          :items="socialLinks" 
+          :gap="45"
+          :auto-close="false"
+          direction="right" 
+          item-size="w-8 h-8"
+        />
+      </div>
     </div>
     <div class="flex items-center space-x-3">
       <div class="relative group">
@@ -53,10 +53,36 @@
 <script setup lang="ts">
 import { Sun, Moon, AppWindow } from 'lucide-vue-next'
 import { useWindowManager } from '~/stores/windowManager'
+import AnimationMenu from '~/components/AnimationMenu.vue'
+import type { AnimeMenuItem } from '~/types/animeMenu.type'
 
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
 const windowStore = useWindowManager()
+
+const socialLinks: AnimeMenuItem[] = [
+  {
+    name: 'Github',
+    icon: '/github-logo.png',
+    href: 'https://github.com/kb274483',
+    alt: 'GitHub Profile',
+    bgColor: 'bg-white/70 dark:bg-white/50'
+  },
+  {
+    name: 'Notion',
+    icon: '/notion-logo.png',
+    href: 'https://delirious-workshop-239.notion.site/Roy-s-Front-end-experience-note-151d63554ba44572b9c114a4bb9b1628?source=copy_link',
+    alt: 'Notion Notes',
+    bgColor: 'bg-white/70 dark:bg-white/50'
+  },
+  {
+    name: 'Instagram',
+    icon: '/instagram-logo.png',
+    href: 'https://www.instagram.com/royphotospace?igsh=MXJxbDFjemhmYnNmaA%3D%3D&utm_source=qr',
+    alt: 'Instagram',
+    bgColor: 'bg-white/70 dark:bg-white/50'
+  }
+];
 
 // 取得縮小視窗的數量 
 const minWindows = computed(() => windowStore.windows.filter(w => w.isMinimized))
