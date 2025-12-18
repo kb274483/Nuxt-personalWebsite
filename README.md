@@ -20,6 +20,7 @@
   - **Settings**：系統設定 (如顯示設定)。
   - **Text Editor**：簡單的文字編輯器。
   - **Travel Path**：透過滾輪或點擊的方式看見我過往的旅行足跡。
+  - **Easter egg**：無用但可能有點有趣的小東西。
 
 ## 技術棧 (Tech Stack)
 - **Core**: [Nuxt 4](https://nuxt.com) (Vue 3)
@@ -28,6 +29,7 @@
 - **Backend / Database**: [Supabase](https://supabase.com/) (用於儲存與讀取攝影作品資料)
 - **Icons**: [Lucide Vue Next](https://lucide.dev/)
 - **Utilities**: [VueUse](https://vueuse.org/)
+- **Anime.js**: [AnimeJS](https://animejs.com/)
 
 # Nuxt Minimal Starter
 
