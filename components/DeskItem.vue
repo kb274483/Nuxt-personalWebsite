@@ -90,7 +90,7 @@ const physicsCalc = () => {
     // Border
     const itemHeight = height.value as number
     const itemWidth = width.value as number
-    const floor = window.innerHeight - itemHeight - 50
+    const floor = window.innerHeight - itemHeight - 100
     const leftBorder = 0
     const rightBorder = window.innerWidth - itemWidth - 10
     // 接觸地面
@@ -110,6 +110,30 @@ const physicsCalc = () => {
     }
     x.value = nextX
     y.value = nextY
+
+    // 貓貓是否碰撞檢測
+    for(const [catId, catPos] of gravityManager.catPosition) {
+      // 桌面圖示半徑
+      const itemRadius = 24
+      const dx = x.value + itemRadius - catPos.x
+      const dy = y.value + itemRadius - catPos.y
+      const distance = Math.sqrt(dx * dx + dy * dy)
+      const minDistance = itemRadius + catPos.radius + 1
+
+      if(distance < minDistance) {
+        // 發生碰撞，計算碰撞方向
+        const nextX = dx / distance
+        const nextY = dy / distance
+        // 避免重疊
+        const overlap = minDistance - distance
+        x.value += nextX * overlap
+        y.value += nextY * overlap
+        // 給予反彈
+        const bounceFactor = 3
+        speed.x += nextX * bounceFactor
+        speed.y += nextY * bounceFactor
+      }
+    }
   }
   gravityRAfId = requestAnimationFrame(physicsCalc)
 }

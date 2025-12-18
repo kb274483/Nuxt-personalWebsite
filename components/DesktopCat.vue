@@ -12,9 +12,11 @@ import { ANIMATIONS } from '~/types/cat.type'
 import type { CatState, AnimConfig } from '~/types/cat.type'
 import { useHead } from '#imports'
 import { useIsMobile } from '~/composables/useIsMobile'
+import { useGravityManager } from '~/stores/gravityManager'
 
 const { isMobile } = useIsMobile()
-
+// 重力模式管理
+const gravityManager = useGravityManager()
 
 // 預載入貓貓圖片
 useHead({
@@ -179,12 +181,12 @@ const updateAnima = (cat: CatState, dt: number) => {
     let speed = WALK_SPEED
     let anima = ANIMATIONS.WALK
 
-    if (distance > 200) {
+    if (distance > 150) {
       speed = RUN_SPEED
       anima = ANIMATIONS.RUN
     }
 
-    if (distance > 500) {
+    if (distance > 300) {
       speed = RUN_SPEED
       anima = ANIMATIONS.JUMP
     }
@@ -224,6 +226,16 @@ const updateAnima = (cat: CatState, dt: number) => {
       startSleep(cat)
     }
   }
+
+  // 即時更新貓貓位置
+  const catRadius = FRAME_WIDTH * cat.scale / 3
+  const catCenterY = cat.y - (FRAME_HEIGHT * cat.scale / 2)
+
+  gravityManager.updateCatPosition(cat.id, {
+    x: cat.x,
+    y: catCenterY,
+    radius: catRadius
+  })
 
   advanceFrame(cat, dt)
 }
@@ -493,11 +505,18 @@ const triggerEvolution = (cat: CatState) => {
     cat.isEvolving = false // 停止閃爍
     cat.targetScale = cat.originalScale * GIANT_SCALE_MULTIPLIER
     
+    // 更新貓貓變大後的半徑，讓周圍的物品可以被彈開
+    gravityManager.updateCatPosition(cat.id, {
+      x: cat.x,
+      y: cat.y,
+      radius: cat.targetScale * FRAME_WIDTH / 2
+    })
+
     // 維持巨大化一段時間後變回來
     setTimeout(() => {
       cat.targetScale = cat.originalScale
       wakeUp(cat) // 解除鎖定，變回原樣
-    }, 8000)
+    }, 10000)
     
   }, 2000)
 }
