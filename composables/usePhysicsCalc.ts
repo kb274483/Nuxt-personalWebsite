@@ -1,6 +1,5 @@
 import { ref, watch, type Ref } from 'vue'
 import { useGravityManager } from '~/stores/gravityManager'
-import { animate, cubicBezier } from 'animejs'
 
 export const usePhysicsCalc = (targetRef: Ref<HTMLElement | null>) => {
   const gravityManager = useGravityManager()
@@ -13,6 +12,7 @@ export const usePhysicsCalc = (targetRef: Ref<HTMLElement | null>) => {
   const speed = { x: 0, y: 0 }
   let isDragging = false
   let aFrameId: number | null = null
+  let returnFrameId: number | null = null
   let initRect: DOMRect | null = null
   let lastPos = { x: 0, y: 0 } // 拖曳座標
 
@@ -106,6 +106,8 @@ export const usePhysicsCalc = (targetRef: Ref<HTMLElement | null>) => {
         const minDistance = itemRadius + catPos.radius + 1
 
         if (distance < minDistance) {
+          // 避免 distance=0 導致 NaN/Infinity
+          if (distance <= 0.0001) continue
           const pushX = dx / distance
           const pushY = dy / distance
           const overlap = minDistance - distance
@@ -118,9 +120,15 @@ export const usePhysicsCalc = (targetRef: Ref<HTMLElement | null>) => {
           speed.y += pushY * bounceFactor
         }
       }
-
-      x.value = nextX
-      y.value = nextY
+      if (!Number.isFinite(nextX) || !Number.isFinite(nextY)) {
+        x.value = 0
+        y.value = 0
+        speed.x = 0
+        speed.y = 0
+      } else {
+        x.value = nextX
+        y.value = nextY
+      }
     }
 
     aFrameId = requestAnimationFrame(physicsLoop)
@@ -138,36 +146,59 @@ export const usePhysicsCalc = (targetRef: Ref<HTMLElement | null>) => {
   }
 
   const stopPhysics = () => {
-    if (aFrameId) cancelAnimationFrame(aFrameId)
+    if (aFrameId) {
+      cancelAnimationFrame(aFrameId)
+      aFrameId = null
+    }
+    if (returnFrameId) {
+      cancelAnimationFrame(returnFrameId)
+      returnFrameId = null
+    }
     isDragging = false
     
-    // 如果有偏移，執行動畫歸位
-    if (x.value !== 0 || y.value !== 0) {
-      const targets = { x: x.value, y: y.value }
-      
-      animate(targets, {
-        x: 0,
-        y: 0,
-        duration: 500,
-        easing: cubicBezier(0.25, 1, 0.5, 1) as any,
-        update: () => {
-          x.value = targets.x
-          y.value = targets.y
-        },
-        complete: () => {
-          // 動畫結束後確保歸零
-          x.value = 0
-          y.value = 0
-        }
-      })
-    } else {
+    // 避免 NaN/Infinity
+    if (!Number.isFinite(x.value) || !Number.isFinite(y.value)) {
       x.value = 0
       y.value = 0
+      return
     }
+
+    const startX = x.value
+    const startY = y.value
+    if (Math.abs(startX) <= 0.1 && Math.abs(startY) <= 0.1) {
+      x.value = 0
+      y.value = 0
+      return
+    }
+
+    const duration = 500
+    const startTime = performance.now()
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3)
+
+    const step = (now: number) => {
+      const t = Math.min(1, (now - startTime) / duration)
+      const e = easeOutCubic(t)
+      x.value = startX * (1 - e)
+      y.value = startY * (1 - e)
+
+      if (t < 1) {
+        returnFrameId = requestAnimationFrame(step)
+      } else {
+        returnFrameId = null
+        x.value = 0
+        y.value = 0
+      }
+    }
+
+    returnFrameId = requestAnimationFrame(step)
   }
 
   watch(() => gravityManager.isGravityEnabled, (enabled) => {
     if (enabled) {
+      if (returnFrameId) {
+        cancelAnimationFrame(returnFrameId)
+        returnFrameId = null
+      }
       startPhysics()
     } else {
       stopPhysics()
