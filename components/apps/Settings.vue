@@ -105,7 +105,7 @@
 
 <script setup lang="ts">
 import { useDark, useToggle } from '@vueuse/core'
-import { RotateCw, FileUser, Code, Image, Settings, Plane, Skull } from 'lucide-vue-next'
+import { RotateCw, FileUser, Code, Image, Settings, Plane, Skull, Check } from 'lucide-vue-next'
 import { useTemplateRef, onMounted } from 'vue'
 import { Sun, Moon } from 'lucide-vue-next'
 import { useWallpaper } from '~/composables/useWallpaper'

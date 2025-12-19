@@ -1,7 +1,13 @@
 <template>
   <div class="w-full h-12 bg-slate-400/70 dark:bg-stone-600/50 backdrop-blur-md text-gray-900 dark:text-white flex items-center justify-between px-4 text-xs font-medium select-none z-50 fixed top-0 left-0 border-b border-gray-200/50 dark:border-white/10 shadow-sm transition-colors duration-300">
     <div class="flex items-center space-x-4">
-      <span class="font-bold text-base">Roy Space</span>
+      <span 
+        ref="titleRef" 
+        class="font-bold text-base inline-block cursor-grab active:cursor-grabbing"
+        :style="{ transform: `translate3d(${titleX}px, ${titleY}px, 0)` }"
+      >
+        Roy Space
+      </span>
       <div class="flex items-center gap-4">
         <AnimationMenu 
           :items="socialLinks" 
@@ -39,9 +45,11 @@
         </div>
       </div>
       <button 
+        ref="themeBtnRef"
         @click="handleThemeChange($event)" 
         class="p-2 rounded-md hover:bg-gray-200/50 dark:hover:bg-white/10 transition-colors"
         :title="isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+        :style="{ transform: `translate3d(${btnX}px, ${btnY}px, 0)` }"
       >
         <Sun v-show="isDark" class="w-8 h-8" />
         <Moon v-show="!isDark" class="w-8 h-8" />
@@ -55,10 +63,22 @@ import { Sun, Moon, AppWindow } from 'lucide-vue-next'
 import { useWindowManager } from '~/stores/windowManager'
 import AnimationMenu from '~/components/AnimationMenu.vue'
 import type { AnimeMenuItem } from '~/types/animeMenu.type'
+import { usePhysicsCalc } from '~/composables/usePhysicsCalc'
+import { useDraggable } from '@vueuse/core'
+import { useGravityManager } from '~/stores/gravityManager'
 
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
 const windowStore = useWindowManager()
+const gravityManager = useGravityManager()
+
+// Physics refs
+const titleRef = ref<HTMLElement | null>(null)
+const themeBtnRef = ref<HTMLElement | null>(null)
+
+
+const { x: titleX, y: titleY, startDrag, moveDrag, endDrag } = usePhysicsCalc(titleRef)
+const { x: btnX, y: btnY } = usePhysicsCalc(themeBtnRef)
 
 const socialLinks: AnimeMenuItem[] = [
   {
@@ -117,6 +137,28 @@ const handleThemeChange = (event: MouseEvent)=>{
   })
 
 }
+
+// 設定拖曳
+useDraggable(titleRef, {
+  initialValue: { x: 0, y: 0 },
+  handle: titleRef,
+  disabled: computed(() => !gravityManager.isGravityEnabled),
+  onStart: (_, event: PointerEvent) => {
+    if(gravityManager.isGravityEnabled) {
+      startDrag(event.clientX, event.clientY)
+    }
+  },
+  onMove: (_, event: PointerEvent) => {
+    if(gravityManager.isGravityEnabled) {
+      moveDrag(event.clientX, event.clientY)
+    }
+  },
+  onEnd: () => {
+    if (gravityManager.isGravityEnabled) {
+      endDrag()
+    }
+  }
+})
 </script>
 
 <style scoped>
