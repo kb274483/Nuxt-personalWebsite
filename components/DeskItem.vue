@@ -11,6 +11,7 @@
       height: `${height}px`,
     }"
     @dblclick="openApp()"
+    @touchstart="openApp()"
     @click="handleClick"
   >
     <button 

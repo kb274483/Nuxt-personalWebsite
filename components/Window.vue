@@ -4,14 +4,8 @@
       v-show="!windowState.isMinimized"
       ref="windowRef"
       class="absolute flex flex-col bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-lg shadow-2xl overflow-hidden border border-white/30 dark:border-white/10 transition-shadow duration-200"
-      :style="{
-        left: `${x}px`,
-        top: `${y}px`,
-        width: `${width}px`,
-        height: `${height}px`,
-        zIndex: windowState.zIndex,
-      }"
-      :class="{ 'inset-0 !w-full !h-full !left-0 !top-12 rounded-none': windowState.isMaximized || isMobile }"
+      :style="windowStyle"
+      :class="{ 'rounded-none': windowState.isMaximized || isMobile }"
       @mousedown="focusWindow"
       @contextmenu.stop=""
     >
@@ -81,6 +75,31 @@ const x = ref<number>(props.windowState.x)
 const y = ref<number>(props.windowState.y)
 const width = ref<number>(props.windowState.width)
 const height = ref<number>(props.windowState.height)
+
+const TOP_OFFSET = 48
+
+const windowStyle = computed(() => {
+  // 最大化或手機：佔滿可視區
+  if ((props.windowState.isMaximized || isMobile.value) &&
+    typeof window !== 'undefined'
+  ) {
+    return {
+      left: `0px`,
+      top: `${TOP_OFFSET}px`,
+      width: `${window.innerWidth}px`,
+      height: `${Math.max(200, window.innerHeight - TOP_OFFSET)}px`,
+      zIndex: props.windowState.zIndex,
+    }
+  }
+
+  return {
+    left: `${x.value}px`,
+    top: `${y.value}px`,
+    width: `${width.value}px`,
+    height: `${height.value}px`,
+    zIndex: props.windowState.zIndex,
+  }
+})
 
 useDraggable(windowRef, {
   initialValue: { x: props.windowState.x, y: props.windowState.y },
