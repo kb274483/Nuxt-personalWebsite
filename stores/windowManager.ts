@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { useIsMobile } from '~/composables/useIsMobile'
 
 export interface WindowState {
     id: string
@@ -19,7 +20,7 @@ export const useWindowManager = defineStore('windowManager', () => {
     const windows = ref<WindowState[]>([])
     const activeWindowId = ref<string | null>(null) 
     const zIndexCounter = ref<number>(100)
-
+    const { isMobile } = useIsMobile()
     const openWindow = (id: string, title: string, component: string, props: any = {}) => {
         const existing = windows.value.find(w => w.id === id)
         if (existing) {
@@ -27,8 +28,6 @@ export const useWindowManager = defineStore('windowManager', () => {
             if (existing.isMinimized) existing.isMinimized = false
             return
         }
-
-        const isMobile = window.innerWidth < 768
 
         windows.value.push({
             id,
@@ -41,7 +40,7 @@ export const useWindowManager = defineStore('windowManager', () => {
             height: isMobile ? window.innerHeight : 800,
             zIndex: ++zIndexCounter.value,
             isMinimized: false,
-            isMaximized: isMobile
+            isMaximized: isMobile.value ? true : false
         })
         activeWindowId.value = id
     }
