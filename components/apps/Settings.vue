@@ -83,7 +83,7 @@
                         :class="wallpaper === photo.src ? 'border-green-500 ring-2 ring-green-500/20' : 'border-transparent hover:border-gray-300'"
                     >
                         <img 
-                            :src="photo.thumbnail" 
+                            :src="photo.thumbnail || photo.src" 
                             class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 rounded-lg"
                             loading="lazy"
                         />

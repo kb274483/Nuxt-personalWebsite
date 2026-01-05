@@ -8,6 +8,7 @@ export const usePhotoApi = ()=>{
   const CACHE_KEY = 'photos_cache_v1.0.1'
   // Storage 名稱
   const BUCKET_NAME = 'Gallery' 
+  const THUMB_PREFIX = 'thumb/'
   
   // 取得照片
   const getPhotos = async ()=>{
@@ -39,16 +40,10 @@ export const usePhotoApi = ()=>{
       .from(BUCKET_NAME)
       .getPublicUrl(item.file_path)
       
+      const thumbPath = `${THUMB_PREFIX}${item.file_path}`
       const { data: thumbnailUrlData } = $supabase.storage
         .from(BUCKET_NAME)
-        .getPublicUrl(item.file_path, {
-          transform: {
-            width: 400,
-            height: 400,
-            resize: 'contain',
-            quality: 80,
-          },
-        })
+        .getPublicUrl(thumbPath)
       return {
         ...item,
         src: publicUrlData.publicUrl,

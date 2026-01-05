@@ -17,7 +17,7 @@ export interface Photo {
   updated_at?: string;
 
   src: string;       // 完整圖片網址
-  thumbnail: string; // 縮圖網址
+  thumbnail?: string | null; // 縮圖網址
 }
 
 // 緩存結構

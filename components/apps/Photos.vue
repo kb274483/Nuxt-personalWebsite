@@ -21,10 +21,12 @@
         >
           <!-- 縮圖 -->
           <img 
-            :src="photo.thumbnail" 
+            :src="photo.thumbnail || photo.src" 
             :alt="photo.title || 'Untitled'"
             class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
             loading="lazy"
+            decoding="async"
+            fetchpriority="low"
           />
           
           <!-- Hover 遮罩 -->
