@@ -86,6 +86,9 @@
                             :src="photo.thumbnail || photo.src" 
                             class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 rounded-lg"
                             loading="lazy"
+                            decoding="async"
+                            fetchpriority="low"
+                            @error="(e) => handleWallpaperImageError(e, photo)"
                         />
                         <div v-if="wallpaper === photo.src" class="absolute inset-0 bg-black/20 flex items-center justify-center">
                             <Check class="w-6 h-6 text-white drop-shadow-md" />
@@ -111,6 +114,7 @@ import { Sun, Moon } from 'lucide-vue-next'
 import { useWallpaper } from '~/composables/useWallpaper'
 import { usePhotoManager } from '~/stores/photoManager'
 import { useGravityManager } from '~/stores/gravityManager'
+import type { Photo } from '~/types/photo.type'
 
 // 桌布狀態
 const { wallpaper, setWallpaper } = useWallpaper()
@@ -220,6 +224,14 @@ const handleGravity = ()=>{
     tricksyButtonStyle.value = {
         transform: `translate3d(0, 0, 0)`
     }
+}
+
+const handleWallpaperImageError = (e: Event, photo: Photo) => {
+  const img = e.target as HTMLImageElement | null
+  if (!img) return
+  if (img.dataset.fallbackApplied === '1') return
+  img.dataset.fallbackApplied = '1'
+  img.src = photo.src
 }
 
 onMounted(async () => {

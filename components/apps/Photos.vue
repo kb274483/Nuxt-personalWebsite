@@ -27,6 +27,7 @@
             loading="lazy"
             decoding="async"
             fetchpriority="low"
+            @error="(e) => handleGridImageError(e, photo)"
           />
           
           <!-- Hover 遮罩 -->
@@ -233,6 +234,14 @@ const imageLoaded = ref<boolean>(false)
 const handleImageLoad = () => {
   console.log('image loaded')
   imageLoaded.value = true
+}
+
+const handleGridImageError = (e: Event, photo: Photo) => {
+  const img = e.target as HTMLImageElement | null
+  if (!img) return
+  if (img.dataset.fallbackApplied === '1') return
+  img.dataset.fallbackApplied = '1'
+  img.src = photo.src
 }
 
 onMounted(async () => {
