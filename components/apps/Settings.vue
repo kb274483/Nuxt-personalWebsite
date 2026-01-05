@@ -3,46 +3,47 @@
     class="relative h-full flex flex-col bg-gray-50 dark:bg-stone-800/80 text-gray-900 dark:text-gray-100 transition-colors duration-300">
     <div class="p-4 flex flex-col flex-1 overflow-hidden pb-14">
         <h2 class="text-lg font-bold mb-2 flex-shrink-0">System Settings</h2>
-
-        <div class="bg-white dark:bg-stone-700 rounded-lg shadow px-4 py-2 mb-4 transition-colors duration-300 flex-shrink-0">
-            <h3 class="font-semibold mb-2 text-sm text-gray-500 dark:text-gray-400 uppercase">
-                Do Not Touch This Button
-            </h3>
-            <div class="flex items-center justify-between py-2 border-b dark:border-gray-600 last:border-0">
-                <span>IS DANGEROUS</span>
-                <button ref="tricksyButtonRef"
-                    @click="handleGravity()"
-                    @mouseenter="tricksyButton()"
-                    class="group w-16 h-10 rounded relative cursor-pointer transition-all duration-300 ease-in-out focus:outline-none p-2 hover:bg-red-500/70 dark:hover:bg-red-500/70 active:scale-95 z-50"
-                    :class="useGravityManager().isGravityEnabled ?
-                        'bg-red-500/70 dark:bg-red-500/70' :
-                        'bg-gray-200 dark:bg-stone-500'"
-                    :style="tricksyButtonStyle"
-                >
-                    <Skull class="w-6 h-6 mx-auto group-hover:animate-bounce " ref="toggleGravityRef" />
-                </button>
+        <div class="flex gap-4">
+            <div class="bg-white dark:bg-stone-700 rounded-lg shadow px-4 py-2 mb-4 transition-colors duration-300 flex-shrink-0 w-1/2">
+                <h3 class="font-semibold mb-2 text-sm text-gray-500 dark:text-gray-400 uppercase">
+                    Do Not Touch This Button
+                </h3>
+                <div class="flex items-center justify-between py-2 border-b dark:border-gray-600 last:border-0">
+                    <span>IS DANGEROUS</span>
+                    <button ref="tricksyButtonRef"
+                        @click="handleGravity()"
+                        @mouseenter="tricksyButton()"
+                        class="group w-16 h-10 rounded relative cursor-pointer transition-all duration-300 ease-in-out focus:outline-none p-2 hover:bg-red-500/70 dark:hover:bg-red-500/70 active:scale-95 z-50"
+                        :class="useGravityManager().isGravityEnabled ?
+                            'bg-red-500/70 dark:bg-red-500/70' :
+                            'bg-gray-200 dark:bg-stone-500'"
+                        :style="tricksyButtonStyle"
+                    >
+                        <Skull class="w-6 h-6 mx-auto group-hover:animate-bounce " ref="toggleGravityRef" />
+                    </button>
+                </div>
             </div>
-        </div>
-
-        <div class="bg-white dark:bg-stone-700 rounded-lg shadow px-4 py-2 mb-4 transition-colors duration-300 flex-shrink-0">
-            <h3 class="font-semibold mb-2 text-sm text-gray-500 dark:text-gray-400 uppercase">Appearance</h3>
-            <div class="flex items-center justify-between py-2 border-b dark:border-gray-600 last:border-0">
-                <span>Dark Mode</span>
-                <div class="flex items-center space-x-2">
-                    <button 
-                        class="w-16 h-10 rounded relative cursor-pointer transition-all duration-500 focus:outline-none" 
-                        :class="!isDark ? 'bg-green-500' : 'bg-gray-300/50'"
-                        @click="toggleDark()"
-                    >
-                        <Sun class="w-6 h-6 mx-auto" />
-                    </button>
-                    <button 
-                        class="w-16 h-10 rounded relative cursor-pointer transition-all duration-500 focus:outline-none" 
-                        :class="isDark ? 'bg-green-500' : 'bg-gray-300/50'"
-                        @click="toggleDark()"
-                    >
-                        <Moon class="w-6 h-6 mx-auto" />
-                    </button>
+    
+            <div class="bg-white dark:bg-stone-700 rounded-lg shadow px-4 py-2 mb-4 transition-colors duration-300 flex-shrink-0 flex-1">
+                <h3 class="font-semibold mb-2 text-sm text-gray-500 dark:text-gray-400 uppercase">Appearance</h3>
+                <div class="flex items-center justify-between py-2 border-b dark:border-gray-600 last:border-0">
+                    <span>Dark Mode</span>
+                    <div class="flex items-center space-x-2">
+                        <button 
+                            class="w-16 h-10 rounded relative cursor-pointer transition-all duration-500 focus:outline-none" 
+                            :class="!isDark ? 'bg-green-500' : 'bg-gray-300/50'"
+                            @click="toggleDark()"
+                        >
+                            <Sun class="w-6 h-6 mx-auto" />
+                        </button>
+                        <button 
+                            class="w-16 h-10 rounded relative cursor-pointer transition-all duration-500 focus:outline-none" 
+                            :class="isDark ? 'bg-green-500' : 'bg-gray-300/50'"
+                            @click="toggleDark()"
+                        >
+                            <Moon class="w-6 h-6 mx-auto" />
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -59,41 +60,109 @@
             </div>
         </div>
         <div class="photos-container bg-white dark:bg-stone-700 rounded-lg shadow p-4 mb-4 transition-colors duration-300 flex-1 min-h-0 flex flex-col">
-            <h3 class="font-semibold mb-2 text-sm text-gray-500 dark:text-gray-400 uppercase">
-                Desktop background
-            </h3>
+            <div class="flex flex-col md:flex-row items-center justify-between gap-3 flex-shrink-0">
+                <h3 class="font-semibold text-sm text-gray-500 dark:text-gray-400 uppercase">
+                    Desktop background
+                </h3>
 
-            <div class="custom-scrollbar overflow-y-auto">
-                <div v-if="loading" class="py-4 text-center text-sm text-gray-500">Loading photos...</div>
-                <div v-else class="photos-grid grid gap-2">
-                    <button 
-                        @click="setWallpaper(null)"
-                        class="aspect-square relative rounded-lg border-2 transition-all p-4"
-                        :class="wallpaper === null ? 'border-green-500 ring-2 ring-green-500/20' : 'border-transparent hover:border-gray-300'"
-                    >
-                        <div class="w-full h-full bg-black/20 flex items-center justify-center rounded-lg">
-                            <span class="text-white text-sm">None</span>
+                <div class="rounded-lg border border-gray-200 dark:border-gray-600 p-2 flex items-center gap-2 my-2">
+                    <div class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
+                        Display
+                    </div>
+
+                    <label class="block text-sm">
+                        <span class="text-gray-600 dark:text-gray-300">
+                            Fit
+                        </span>
+                        <select class="mt-1 w-full rounded bg-white/80 dark:bg-stone-800 border border-gray-200 dark:border-gray-600 px-2 py-1"
+                        v-model="wallpaperFit"
+                        >
+                            <option value="cover">Cover</option>
+                            <option value="contain">Contain</option>
+                            <option value="stretch">Stretch</option>
+                        </select>
+                    </label>
+
+                    <label class="block text-sm">
+                        <span class="text-gray-600 dark:text-gray-300">Position</span>
+                        <select class="mt-1 w-full rounded bg-white/80 dark:bg-stone-800 border border-gray-200 dark:border-gray-600 px-2 py-1"
+                        v-model="wallpaperPosition"
+                        >
+                            <option value="center">Center</option>
+                            <option value="top">Top</option>
+                            <option value="bottom">Bottom</option>
+                            <option value="left">Left</option>
+                            <option value="right">Right</option>
+                        </select>
+                    </label>
+
+                    <label class="block text-sm">
+                        <span class="text-gray-600 dark:text-gray-300">Repeat</span>
+                        <select class="mt-1 w-full rounded bg-white/80 dark:bg-stone-800 border border-gray-200 dark:border-gray-600 px-2 py-1"
+                        v-model="wallpaperRepeat"
+                        >
+                            <option value="no-repeat">No repeat</option>
+                            <option value="repeat">Repeat</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+
+            <div class="mt-3 grid grid-cols-1 lg:grid-cols-[1fr_220px] gap-4 flex-1 min-h-0">
+                <div class="custom-scrollbar overflow-y-auto flex-1 min-h-0">
+                    <div v-if="loading" class="py-4 text-center text-sm text-gray-500">
+                        Loading photos...
+                    </div>
+
+                    <div v-else class="photos-grid grid gap-2">
+                        <button @click="setWallpaper(null)"
+                            class="aspect-square relative rounded-lg border-2 transition-all p-4"
+                            :class="wallpaper === null ? 'border-green-500 ring-2 ring-green-500/20' : 'border-transparent hover:border-gray-300'"
+                        >
+                            <div class="w-full h-full bg-black/20 flex items-center justify-center rounded-lg">
+                                <span class="text-white text-sm">None</span>
+                            </div>
+                        </button>
+
+                        <button v-for="photo in photos"
+                            :key="photo.id"
+                            @click="setWallpaper(photo.src)"
+                            class="aspect-square relative rounded-lg border-2 transition-all p-1 sm:p-4"
+                            :class="wallpaper === photo.src ? 'border-green-500 ring-2 ring-green-500/20' : 'border-transparent hover:border-gray-300'"
+                        >
+                            <img
+                                :src="photo.thumbnail || photo.src"
+                                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 rounded-lg"
+                                loading="lazy"
+                                decoding="async"
+                                fetchpriority="low"
+                                @error="(e) => handleWallpaperImageError(e, photo)"
+                            />
+                            <div v-if="wallpaper === photo.src" class="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                <Check class="w-6 h-6 text-white drop-shadow-md" />
+                            </div>
+                        </button>
+                    </div>
+                </div>
+                <!-- 即時預覽圖示 -->
+                <div class="flex flex-1 items-center gap-2">
+                    <svg viewBox="0 0 306.359 306.359" class="w-full h-auto">
+                    <g>
+                        <path style="fill:#E4E7E7;" d="M306.235,205.601v23.917c0,8.024-8.789,14.534-17.167,14.534H15.157C6.788,244.052,0,237.542,0,229.518v-23.917L306.235,205.601L306.235,205.601z"/>
+                        <path style="fill:#6B7280;" d="M15.157,14.424h276.036c8.368,0,15.166,6.52,15.166,14.563v176.681c-0.182-0.057-306.378-0.019-306.359,0V28.978C0,20.935,6.788,14.424,15.157,14.424z"/>
+                        <path style="fill:#000000;" d="M287.22,33.65v153.194c-0.594-0.019-267.927,0.153-268.042,0V33.65C19.178,33.65,287.287,33.717,287.22,33.65z"/>
+                        <path style="fill:#CFD3D5;" d="M105.474,281.202h95.603v10.733h-95.603V281.202z"/>
+                        <path style="fill:#CFD3D5" d="M181.64,244.043h-56.73c0.096,19.302-9.603,37.121-19.436,37.121l0.019,0.038h95.564
+		l0.01-0.038C191.253,281.164,181.544,263.345,181.64,244.043z"/>
+                    </g>
+
+                    <foreignObject x="19.2" y="33.8" width="268.0" height="153.0">
+                        <div xmlns="http://www.w3.org/1999/xhtml"
+                            class="w-full h-full rounded-sm overflow-hidden"
+                            :style="previewStyle">
                         </div>
-                    </button>
-                    <button 
-                        v-for="photo in photos" 
-                        :key="photo.id"
-                        @click="setWallpaper(photo.src)"
-                        class="aspect-square relative rounded-lg border-2 transition-all p-1 sm:p-4"
-                        :class="wallpaper === photo.src ? 'border-green-500 ring-2 ring-green-500/20' : 'border-transparent hover:border-gray-300'"
-                    >
-                        <img 
-                            :src="photo.thumbnail || photo.src" 
-                            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 rounded-lg"
-                            loading="lazy"
-                            decoding="async"
-                            fetchpriority="low"
-                            @error="(e) => handleWallpaperImageError(e, photo)"
-                        />
-                        <div v-if="wallpaper === photo.src" class="absolute inset-0 bg-black/20 flex items-center justify-center">
-                            <Check class="w-6 h-6 text-white drop-shadow-md" />
-                        </div>
-                    </button>
+                    </foreignObject>
+                    </svg>
                 </div>
             </div>
         </div>
@@ -109,7 +178,7 @@
 <script setup lang="ts">
 import { useDark, useToggle } from '@vueuse/core'
 import { RotateCw, FileUser, Code, Image, Settings, Plane, Skull, Check } from 'lucide-vue-next'
-import { useTemplateRef, onMounted } from 'vue'
+import { useTemplateRef, onMounted, computed } from 'vue'
 import { Sun, Moon } from 'lucide-vue-next'
 import { useWallpaper } from '~/composables/useWallpaper'
 import { usePhotoManager } from '~/stores/photoManager'
@@ -117,9 +186,29 @@ import { useGravityManager } from '~/stores/gravityManager'
 import type { Photo } from '~/types/photo.type'
 
 // 桌布狀態
-const { wallpaper, setWallpaper } = useWallpaper()
-// 取得照片
+const { wallpaper,
+    setWallpaper, 
+    wallpaperOptions, 
+    setWallpaperOptions, 
+    wallpaperStyle 
+} = useWallpaper()
+const wallpaperFit = computed({
+  get: () => wallpaperOptions.value.fit,
+  set: (fit) => setWallpaperOptions({ fit })
+})
+const wallpaperPosition = computed({
+  get: () => wallpaperOptions.value.position,
+  set: (position) => setWallpaperOptions({ position })
+})
+const wallpaperRepeat = computed({
+  get: () => wallpaperOptions.value.repeat,
+  set: (repeat) => setWallpaperOptions({ repeat })
+})
+const previewStyle = computed(() => {
+  return wallpaper.value ? wallpaperStyle.value : { backgroundColor: 'rgba(0,0,0,0.12)' }
+})
 
+// 取得照片
 const photos = computed(() => usePhotoManager().photos)
 const loading = computed(() => usePhotoManager().loading)
 
