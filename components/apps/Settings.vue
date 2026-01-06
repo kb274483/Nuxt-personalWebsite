@@ -1,10 +1,10 @@
 <template>
   <div ref="settingWindowRef"
     class="relative h-full flex flex-col bg-gray-50 dark:bg-stone-800/80 text-gray-900 dark:text-gray-100 transition-colors duration-300">
-    <div class="p-4 flex flex-col flex-1 overflow-hidden pb-14">
+    <div class="p-4 flex flex-col flex-1 overflow-auto md:overflow-hidden pb-14">
         <h2 class="text-lg font-bold mb-2 flex-shrink-0">System Settings</h2>
-        <div class="flex gap-4">
-            <div class="bg-white dark:bg-stone-700 rounded-lg shadow px-4 py-2 mb-4 transition-colors duration-300 flex-shrink-0 w-1/2">
+        <div class="flex flex-col md:flex-row md:gap-4">
+            <div class="bg-white dark:bg-stone-700 rounded-lg shadow px-4 py-2 mb-4 transition-colors duration-300 flex-shrink-0 flex-1">
                 <h3 class="font-semibold mb-2 text-sm text-gray-500 dark:text-gray-400 uppercase">
                     Do Not Touch This Button
                 </h3>
@@ -59,14 +59,14 @@
                 </button>
             </div>
         </div>
-        <div class="photos-container bg-white dark:bg-stone-700 rounded-lg shadow p-4 mb-4 transition-colors duration-300 flex-1 min-h-0 flex flex-col">
+        <div class="photos-container bg-white dark:bg-stone-700 rounded-lg shadow p-4 mb-4 transition-colors duration-300 flex-1 min-h-[50dvh] max-h-[80dvh] flex flex-col">
             <div class="flex flex-col md:flex-row items-center justify-between gap-3 flex-shrink-0">
                 <h3 class="font-semibold text-sm text-gray-500 dark:text-gray-400 uppercase">
                     Desktop background
                 </h3>
 
                 <div class="rounded-lg border border-gray-200 dark:border-gray-600 p-2 flex items-center gap-2 my-2">
-                    <div class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
+                    <div class="text-xs hidden md:block font-semibold text-gray-500 dark:text-gray-400 uppercase">
                         Display
                     </div>
 
@@ -108,8 +108,8 @@
                 </div>
             </div>
 
-            <div class="mt-3 grid grid-cols-1 lg:grid-cols-[1fr_220px] gap-4 flex-1 min-h-0">
-                <div class="custom-scrollbar overflow-y-auto flex-1 min-h-0">
+            <div class="mt-3 grid grid-cols-1 lg:grid-cols-[1fr_220px] gap-4 flex-1 min-h-[20vh]">
+                <div class="custom-scrollbar overflow-y-auto flex-1 min-h-[20vh]">
                     <div v-if="loading" class="py-4 text-center text-sm text-gray-500">
                         Loading photos...
                     </div>
@@ -146,7 +146,7 @@
                 </div>
                 <!-- 即時預覽圖示 -->
                 <div class="flex flex-1 items-center gap-2">
-                    <svg viewBox="0 0 306.359 306.359" class="w-full h-auto">
+                    <svg viewBox="0 0 306.359 306.359" class="hidden md:block w-full h-auto">
                     <g>
                         <path style="fill:#E4E7E7;" d="M306.235,205.601v23.917c0,8.024-8.789,14.534-17.167,14.534H15.157C6.788,244.052,0,237.542,0,229.518v-23.917L306.235,205.601L306.235,205.601z"/>
                         <path style="fill:#6B7280;" d="M15.157,14.424h276.036c8.368,0,15.166,6.52,15.166,14.563v176.681c-0.182-0.057-306.378-0.019-306.359,0V28.978C0,20.935,6.788,14.424,15.157,14.424z"/>
@@ -352,13 +352,13 @@ onMounted(async () => {
 
     @container photos-container (min-width: 320px) {
         .photos-grid {
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
     }
 
     @container photos-container (min-width: 480px) {
         .photos-grid {
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, minmax(0, 1fr));
         }
     }
 
