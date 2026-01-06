@@ -131,7 +131,7 @@
                             :class="wallpaper === photo.src ? 'border-green-500 ring-2 ring-green-500/20' : 'border-transparent hover:border-gray-300'"
                         >
                             <img
-                                :src="photo.thumbnail || photo.src"
+                                :src="photo.thumbnail || '/photo-thumb-placeholder.svg'"
                                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 rounded-lg"
                                 loading="lazy"
                                 decoding="async"
@@ -320,7 +320,8 @@ const handleWallpaperImageError = (e: Event, photo: Photo) => {
   if (!img) return
   if (img.dataset.fallbackApplied === '1') return
   img.dataset.fallbackApplied = '1'
-  img.src = photo.src
+  // 不要回退載入大圖（避免首次進站時下載過大）
+  img.src = '/photo-thumb-placeholder.svg'
 }
 
 onMounted(async () => {

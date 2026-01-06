@@ -21,7 +21,7 @@
         >
           <!-- 縮圖 -->
           <img 
-            :src="photo.thumbnail || photo.src" 
+            :src="photo.thumbnail || '/photo-thumb-placeholder.svg'" 
             :alt="photo.title || 'Untitled'"
             class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
             loading="lazy"
@@ -241,7 +241,8 @@ const handleGridImageError = (e: Event, photo: Photo) => {
   if (!img) return
   if (img.dataset.fallbackApplied === '1') return
   img.dataset.fallbackApplied = '1'
-  img.src = photo.src
+  // 不要回退載入大圖（避免首次開啟相簿時下載過大）
+  img.src = '/photo-thumb-placeholder.svg'
 }
 
 onMounted(async () => {

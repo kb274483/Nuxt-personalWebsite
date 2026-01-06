@@ -5,10 +5,14 @@ export const usePhotoApi = ()=>{
 
   // 緩存設定
   const CACHE_DURATION = 1000 * 60 * 60 * 24
-  const CACHE_KEY = 'photos_cache_v1.0.1'
+  const CACHE_KEY = 'photos_cache_v1.0.3'
+  
   // Storage 名稱
   const BUCKET_NAME = 'Gallery' 
   const THUMB_PREFIX = 'thumb/'
+  const normalize = (p: string) => p.replace(/^\/+/, '')
+  const stripBucket = (p: string) => normalize(p).replace(new RegExp(`^${BUCKET_NAME}/`), '')
+  const basename = (p: string) => stripBucket(p).split('/').pop() || ''
   
   // 取得照片
   const getPhotos = async ()=>{
@@ -36,11 +40,13 @@ export const usePhotoApi = ()=>{
       })
     }
     const processedData: Photo[] = data?.map((item:any)=>{
+      const originalPath = stripBucket(item.file_path)
       const {data: publicUrlData } = $supabase.storage
       .from(BUCKET_NAME)
-      .getPublicUrl(item.file_path)
+      .getPublicUrl(originalPath)
       
-      const thumbPath = `${THUMB_PREFIX}${item.file_path}`
+      // 縮圖：Gallery/thumb/<filename>
+      const thumbPath = `${THUMB_PREFIX}${basename(originalPath)}`
       const { data: thumbnailUrlData } = $supabase.storage
         .from(BUCKET_NAME)
         .getPublicUrl(thumbPath)
