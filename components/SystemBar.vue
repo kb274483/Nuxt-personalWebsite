@@ -22,6 +22,8 @@
       <div class="relative group">
         <!-- 最小化視窗數量 -->
         <div @click="isMinWindowsList = !isMinWindowsList"
+          role="button"
+          aria-label="Show minimized windows"
           class="flex items-center justify-center w-8 h-8 bg-gray-200/50 dark:bg-white/10 rounded-md cursor-pointer overflow-hidden relative">
           <Transition name="slide-up" mode="out-in">
             <span :key="minWindows.length" class="absolute font-bold font-mono">
@@ -37,6 +39,8 @@
             v-for="window in minWindows" 
             :key="window.id"
             @click="openMinWindow(window.id)"
+            role="button"
+            :aria-label="'Open minimized window: ' + window.title"
             class="px-4 py-2 text-sm rounded hover:bg-stone-300/50 hover:text-black dark:hover:text-white cursor-pointer transition-colors truncate flex items-center gap-2"
           >
             <AppWindow class="w-4 h-4" />
@@ -49,6 +53,7 @@
         @click="handleThemeChange($event)" 
         class="p-2 rounded-md hover:bg-gray-200/50 dark:hover:bg-white/10 transition-colors"
         :title="isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+        :aria-label="isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
         :style="{ transform: `translate3d(${btnX}px, ${btnY}px, 0)` }"
       >
         <Sun v-show="isDark" class="w-8 h-8" />

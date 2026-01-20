@@ -10,6 +10,7 @@
       class="relative z-50 flex items-center justify-center rounded-full shadow-lg transition-transform duration-300 hover:scale-110 active:scale-95 bg-white/90 backdrop-blur-sm dark:bg-stone-800/90"
       :class="[itemSizeClass, mainButtonColor]"
       @click="toggleMenu"
+      aria-label="Toggle menu"
     >
       <transition name="fade" mode="out-in">
         <!-- 一.選單開啟時，顯示 X -->
@@ -49,7 +50,8 @@
           target="_blank"
           class="w-full h-full flex items-center justify-center rounded-full shadow-md border border-white/20 dark:border-none transition-transform duration-300 hover:scale-125"
           :class="item.bgColor || 'bg-white'"
-          @click="isOpen = false" 
+          @click="isOpen = false"
+          :aria-label="item.name"
         >
           <img :src="item.icon" :alt="item.alt || item.name" 
             class="w-full h-full object-cover rounded-full p-1"

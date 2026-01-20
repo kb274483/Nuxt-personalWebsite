@@ -13,11 +13,12 @@
       <div v-else 
         class="photos-grid grid gap-2 sm:gap-4"
       >
-        <div 
+        <button 
           v-for="photo in photos" 
           :key="photo.id"
-          class="group relative aspect-square cursor-pointer overflow-hidden rounded-md bg-gray-100 dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-200"
+          class="group relative aspect-square cursor-pointer overflow-hidden rounded-md bg-gray-100 dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-200 text-left"
           @click="openLightbox(photo)"
+          :aria-label="'View photo: ' + (photo.title || 'Untitled')"
         >
           <!-- 縮圖 -->
           <img 
@@ -37,7 +38,7 @@
             <p v-if="photo.shoot_date" class="text-gray-300 text-[10px]">
               {{ formatDate(photo.shoot_date) }}</p>
           </div>
-        </div>
+        </button>
       </div>
       <div class="h-10"></div>
     </div>
@@ -63,23 +64,27 @@
             @mouseleave="controlBtnShow(false)"
           >
             <div
-              class="absolute inset-0 w-full h-full flex items-center justify-between rounded-lg transition-opacity duration-500 ease-in-out z-50"
+              class="absolute inset-0 w-full h-full flex items-center justify-between rounded-lg transition-opacity duration-500 ease-in-out z-50 pointer-events-none"
               :class="{ 'opacity-100': isControlBtnShow, 'opacity-0': !isControlBtnShow }"
             >
-              <ArrowBigLeftDash @click="lightboxControl('prev')"
-                class="w-8 h-8 cursor-pointer rounded-full p-2 bg-white/50 dark:bg-gray-700/50 hover:bg-white/90 dark:hover:bg-gray-700/90 transition-all duration-200 hover:scale-110"
-                :class="{
-                  'opacity-50': !isMobile,
-                  'opacity-30': isMobile
-                }"
-              />
-              <ArrowBigRightDash @click="lightboxControl('next')" 
-                class="w-8 h-8 cursor-pointer rounded-full p-2 bg-white/50 dark:bg-gray-700/50 hover:bg-white/90 dark:hover:bg-gray-700/90 transition-all duration-200 hover:scale-110" 
-                :class="{
-                  'opacity-50': !isMobile,
-                  'opacity-30': isMobile
-                }"
-              />
+              <button @click="lightboxControl('prev')" class="pointer-events-auto rounded-full focus:outline-none" aria-label="Previous photo">
+                <ArrowBigLeftDash
+                  class="w-8 h-8 cursor-pointer rounded-full p-2 bg-white/50 dark:bg-gray-700/50 hover:bg-white/90 dark:hover:bg-gray-700/90 transition-all duration-200 hover:scale-110"
+                  :class="{
+                    'opacity-50': !isMobile,
+                    'opacity-30': isMobile
+                  }"
+                />
+              </button>
+              <button @click="lightboxControl('next')" class="pointer-events-auto rounded-full focus:outline-none" aria-label="Next photo">
+                <ArrowBigRightDash 
+                  class="w-8 h-8 cursor-pointer rounded-full p-2 bg-white/50 dark:bg-gray-700/50 hover:bg-white/90 dark:hover:bg-gray-700/90 transition-all duration-200 hover:scale-110" 
+                  :class="{
+                    'opacity-50': !isMobile,
+                    'opacity-30': isMobile
+                  }"
+                />
+              </button>
             </div>
             <img
               @load="handleImageLoad"
@@ -104,6 +109,7 @@
             <button 
               class="absolute top-0 right-0 p-2 bg-gray-200 dark:bg-gray-700 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors z-50"
               @click="closeLightbox"
+              aria-label="Close lightbox"
             >
               <X class="w-5 h-5" />
             </button>

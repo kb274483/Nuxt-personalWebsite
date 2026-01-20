@@ -2,6 +2,9 @@
 export default defineNuxtConfig({
   app: {
     head: {
+      htmlAttrs: {
+        lang: 'zh-TW'
+      },
       title: 'Roy\'s Personal Website',
       link: [
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' } 

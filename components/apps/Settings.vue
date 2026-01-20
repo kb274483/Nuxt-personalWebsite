@@ -18,6 +18,7 @@
                             'bg-red-500/70 dark:bg-red-500/70' :
                             'bg-gray-200 dark:bg-stone-500'"
                         :style="tricksyButtonStyle"
+                        aria-label="Toggle gravity mode"
                     >
                         <Skull class="w-6 h-6 mx-auto group-hover:animate-bounce " ref="toggleGravityRef" />
                     </button>
@@ -33,6 +34,7 @@
                             class="w-16 h-10 rounded relative cursor-pointer transition-all duration-500 focus:outline-none" 
                             :class="!isDark ? 'bg-green-500' : 'bg-gray-300/50'"
                             @click="toggleDark()"
+                            aria-label="Switch to light mode"
                         >
                             <Sun class="w-6 h-6 mx-auto" />
                         </button>
@@ -40,6 +42,7 @@
                             class="w-16 h-10 rounded relative cursor-pointer transition-all duration-500 focus:outline-none" 
                             :class="isDark ? 'bg-green-500' : 'bg-gray-300/50'"
                             @click="toggleDark()"
+                            aria-label="Switch to dark mode"
                         >
                             <Moon class="w-6 h-6 mx-auto" />
                         </button>
@@ -54,6 +57,7 @@
                 <span>Reset</span>
                 <button @click="resetDesktopItems()"
                     class="w-16 h-10 rounded relative cursor-pointer transition-colors duration-200 focus:outline-none bg-gray-200 dark:bg-stone-500 p-2 hover:bg-gray-300 dark:hover:bg-stone-600 active:scale-95"
+                    aria-label="Reset desktop items"
                 >
                     <RotateCw class="w-6 h-6 mx-auto" ref="resetDesktopItemsRef" />
                 </button>
@@ -118,6 +122,7 @@
                         <button @click="setWallpaper(null)"
                             class="aspect-square relative rounded-lg border-2 transition-all p-4"
                             :class="wallpaper === null ? 'border-green-500 ring-2 ring-green-500/20' : 'border-transparent hover:border-gray-300'"
+                            aria-label="Set wallpaper to None"
                         >
                             <div class="w-full h-full bg-black/20 flex items-center justify-center rounded-lg">
                                 <span class="text-white text-sm">None</span>
@@ -129,6 +134,7 @@
                             @click="setWallpaper(photo.src)"
                             class="aspect-square relative rounded-lg border-2 transition-all p-1 sm:p-4"
                             :class="wallpaper === photo.src ? 'border-green-500 ring-2 ring-green-500/20' : 'border-transparent hover:border-gray-300'"
+                            aria-label="Set wallpaper to photo"
                         >
                             <img
                                 :src="photo.thumbnail || '/photo-thumb-placeholder.svg'"

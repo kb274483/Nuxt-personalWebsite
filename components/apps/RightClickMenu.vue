@@ -5,15 +5,16 @@
       top: `${props.y}px`,
     }"
   >
-    <div class="flex flex-col gap-2">
-      <div 
+    <div class="flex flex-col gap-2" role="menu">
+      <button 
         v-for="(item, index) in menuItems" 
         :key="index"
-        class="h-10 px-3 rounded hover:bg-gray-800/90 hover:text-white cursor-pointer flex items-center transition-colors"
+        class="h-10 px-3 rounded hover:bg-gray-800/90 hover:text-white cursor-pointer flex items-center transition-colors w-full text-left"
         @click="handleClick(item)"
+        role="menuitem"
       >
         <span class="text-sm">{{ item.label }}</span>
-      </div>
+      </button>
     </div>
   </div>
 </template>

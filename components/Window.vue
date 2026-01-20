@@ -15,13 +15,13 @@
         class="h-8 bg-gray-200/50 dark:bg-white/5 flex items-center px-3 space-x-2 cursor-default select-none border-b border-gray-300/30 dark:border-white/5 shrink-0"
       >
         <div class="flex space-x-2 group">
-          <button @click.stop="close" class="w-5 h-5 rounded border dark:border-white border-black flex items-center justify-center text-[8px] dark:text-white text-black opacity-100 transition-colors">
+          <button aria-label="Close window" @click.stop="close" class="w-5 h-5 rounded border dark:border-white border-black flex items-center justify-center text-[8px] dark:text-white text-black opacity-100 transition-colors">
             <CircleX class="w-full h-hull hidden group-hover:block" />
           </button>
-          <button @click.stop="minimize" class="w-5 h-5 rounded border dark:border-white border-black flex items-center justify-center text-[8px] dark:text-white text-black opacity-100 transition-colors">
+          <button aria-label="Minimize window" @click.stop="minimize" class="w-5 h-5 rounded border dark:border-white border-black flex items-center justify-center text-[8px] dark:text-white text-black opacity-100 transition-colors">
             <ArrowBigDown class="w-full h-hull hidden group-hover:block" />
           </button>
-          <button @click.stop="toggleMaximize" class="w-5 h-5 rounded border dark:border-white border-black flex items-center justify-center text-[8px] dark:text-white text-black opacity-100 transition-colors">
+          <button :aria-label="windowState.isMaximized ? 'Restore window' : 'Maximize window'" @click.stop="toggleMaximize" class="w-5 h-5 rounded border dark:border-white border-black flex items-center justify-center text-[8px] dark:text-white text-black opacity-100 transition-colors">
             <Minimize2 v-if="windowState.isMaximized" 
               class="w-full h-hull hidden group-hover:block" 
             />

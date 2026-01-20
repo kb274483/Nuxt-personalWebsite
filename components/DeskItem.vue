@@ -16,6 +16,7 @@
   >
     <button 
       class="group relative flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all duration-200 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/30 shadow-sm active:scale-95 hover:rotate-2 hover:scale-110"
+      :aria-label="'Open ' + app.name"
     >
       <component :is="app.icon" class="w-8 h-8 text-gray-800 dark:text-white drop-shadow-md" />
     </button>
@@ -37,9 +38,11 @@
       width: `${width}px`,
       height: `${height}px`,
     }"
+    aria-hidden="true"
   >
     <button 
       class="group relative flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all duration-200 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/30 shadow-sm active:scale-95 hover:rotate-2 hover:scale-110"
+      tabindex="-1"
     >
       <component :is="app.icon" class="w-8 h-8 text-gray-800 dark:text-white drop-shadow-md" />
     </button>
