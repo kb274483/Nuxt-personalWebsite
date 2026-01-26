@@ -33,8 +33,8 @@ let FRAME_WIDTH = 128
 let FRAME_HEIGHT = 128
 
 // 基礎縮放比例
-const BASE_SCALE = computed(() => isMobile.value ? 0.25 : 0.5)
-const GIANT_SCALE_MULTIPLIER = 5 // 巨大化倍率
+const BASE_SCALE = computed(() => isMobile.value ? 0.5 : 1)
+const GIANT_SCALE_MULTIPLIER = 4 // 巨大化倍率
 
 const WALK_SPEED = 1     
 const RUN_SPEED = 2     
