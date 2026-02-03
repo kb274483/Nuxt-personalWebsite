@@ -53,10 +53,20 @@
             <div class="relative overflow-hidden aspect-video border-b">
               <img :src="value.image" :alt="value.name" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
               
-              <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 flex items-center justify-center">
-                <span class="opacity-0 group-hover:opacity-100 bg-white/90 text-gray-800 px-4 py-1 rounded-full text-sm font-medium transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                  Visit {{ value.name }}
-                </span>
+              <div class="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors duration-300 flex flex-col items-center justify-center">
+                <div class="opacity-0 group-hover:opacity-100 bg-white/90 text-gray-800 px-4 py-1 rounded-full text-sm font-medium transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                  <span>
+                    Visit {{ value.name }}
+                  </span>
+                </div>
+                <div class="opacity-0 group-hover:opacity-100 bg-white/80 px-4 py-1 rounded-xl text-sm font-medium transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 w-3/4 mt-4">
+                  <p class="text-gray-600 text-sm px-1">
+                    {{ value.description }}
+                  </p>
+                  <p class="text-gray-600 text-sm px-1 mt-4">
+                    [ {{ value.stack?.join(', ') }} ]
+                  </p>
+                </div>
               </div>
             </div>
             
@@ -166,6 +176,8 @@ const demoArray = ref<DemoItem[]>([
   {
     id: '1',
     name: 'Track Expenses',
+    description: '個人記帳、團體分帳、圖表分析',
+    stack: ['Vue', 'TailwindCSS', 'Firebase', 'Quasar'],
     url: 'https://trackexpenses-94bfd.web.app/',
     image: 'https://elasticbeanstalk-ap-northeast-3-320080014524.s3.ap-northeast-3.amazonaws.com/demo_cover/trackExpenese.png',
     github: 'https://github.com/kb274483/TrackExpenses',
@@ -175,6 +187,8 @@ const demoArray = ref<DemoItem[]>([
     id: '2',
     name: 'Short Url',
     url: 'https://brief-url.link/',
+    description: '短網址服務，登入後還可以紀錄瀏覽紀錄 (Open on am:08:00 - pm:10:00)',
+    stack: ['Vue', 'Google OAuth2.0', 'Golang', 'AWS EC2', 'Nginx', 'DynamoDB'],
     image: 'https://elasticbeanstalk-ap-northeast-3-320080014524.s3.ap-northeast-3.amazonaws.com/demo_cover/brief-url.png',
     github: 'https://github.com/kb274483/Quasar-ShortUrlWeb',
     github2: 'https://github.com/kb274483/Golang-ShortUrlServer',
@@ -184,12 +198,16 @@ const demoArray = ref<DemoItem[]>([
     id: '3',
     name: 'Turkiye Travel Memories',
     url: 'https://qwik-turkiye-travel-memories.vercel.app/',
+    description: '嘗試 Qwik 框架，展示土耳其旅行照片',
+    stack: ['Qwik', 'Cloudinary'],
     image: 'https://elasticbeanstalk-ap-northeast-3-320080014524.s3.ap-northeast-3.amazonaws.com/demo_cover/Turkiye+Photo.png',
     github: 'https://github.com/kb274483/Qwik-TurkiyeTravelMemories',
   },
   {
     id: '4',
     name: 'Waterfall Layouts',
+    description: '嘗試瀑布流布局，展示照片',
+    stack:['Vue'],
     url: 'https://vue-waterfall-layouts-demo.vercel.app/',
     image: 'https://elasticbeanstalk-ap-northeast-3-320080014524.s3.ap-northeast-3.amazonaws.com/demo_cover/waterfall_layout.png',
     github: 'https://github.com/kb274483/Vue-WaterfallLayouts',

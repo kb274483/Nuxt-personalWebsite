@@ -6,4 +6,6 @@ export type DemoItem = {
   github: string,
   github2?: string,
   notion?: string,
+  description?: string,
+  stack?: string[],
 }
