@@ -45,7 +45,7 @@
       <div v-if="!activeIframeUrl" 
         class="h-full w-full overflow-y-auto p-4 flex items-center"
       >
-        <div class="text-center grid grid-cols-2 gap-4 max-w-4xl mx-auto">
+        <div class="text-center grid grid-cols-2 gap-4 max-w-4xl my-auto mx-auto">
           <div v-for="value in demoArray" :key="value.id"
             class="browser-item flex flex-col bg-white rounded-lg overflow-hidden cursor-pointer transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-1 group"
             @click="navigateTo(value.url)"
@@ -211,6 +211,15 @@ const demoArray = ref<DemoItem[]>([
     url: 'https://vue-waterfall-layouts-demo.vercel.app/',
     image: 'https://elasticbeanstalk-ap-northeast-3-320080014524.s3.ap-northeast-3.amazonaws.com/demo_cover/waterfall_layout.png',
     github: 'https://github.com/kb274483/Vue-WaterfallLayouts',
+  },
+  {
+    id: '5',
+    name: 'Party Race',
+    description: '派對競賽遊戲',
+    stack:['Vue','Three.js','WebSocket'],
+    url: 'https://party-race-game.vercel.app/',
+    image: 'https://elasticbeanstalk-ap-northeast-3-320080014524.s3.ap-northeast-3.amazonaws.com/demo_cover/party_race.png',
+    github: 'https://github.com/kb274483/Party-race-game',
   },
 ])
 </script>
