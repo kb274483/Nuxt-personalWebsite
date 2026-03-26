@@ -14,21 +14,22 @@
     @touchstart="openApp()"
     @click="handleClick"
   >
-    <button 
-      class="group relative flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all duration-200 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/30 shadow-sm active:scale-95 hover:rotate-2 hover:scale-110"
+    <button
+      class="group relative flex flex-col items-center justify-center w-12 h-12 bg-neo-bg dark:bg-black border-4 border-black dark:border-white shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff] transition-all duration-150 hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#000] dark:hover:shadow-[6px_6px_0px_0px_#fff] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
       :aria-label="'Open ' + app.name"
     >
-      <component :is="app.icon" class="w-8 h-8 text-gray-800 dark:text-white drop-shadow-md" />
+      <component :is="app.icon" class="w-6 h-6 text-black dark:text-white stroke-[2.5px]" />
     </button>
-    <input type="text" 
-      v-if="props.app.editStatus" 
-      v-model="app.name" 
+    <input
+      type="text"
+      v-if="props.app.editStatus"
+      v-model="app.name"
       @blur="useDesktopItemsManager().renameFile(app.id, app.name)"
-      class="bg-transparent text-xs text-gray-900 dark:text-white font-medium border-b-2 border-gray-900 dark:border-white outline-none"
+      class="bg-neo-secondary border-b-2 border-black dark:border-white text-xs text-black font-bold outline-none text-center w-full px-1"
     />
     <p v-else
-      class="text-xs text-center text-gray-900 dark:text-white font-medium">{{ app.name }}
-    </p>
+      class="text-[10px] text-center text-black dark:text-white font-bold uppercase tracking-wide leading-tight mt-0.5 max-w-[56px] truncate"
+    >{{ app.name }}</p>
   </div>
   <div
     class="absolute opacity-0"
@@ -40,11 +41,11 @@
     }"
     aria-hidden="true"
   >
-    <button 
-      class="group relative flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all duration-200 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/30 shadow-sm active:scale-95 hover:rotate-2 hover:scale-110"
+    <button
+      class="relative flex flex-col items-center justify-center w-12 h-12 bg-neo-secondary border-4 border-black"
       tabindex="-1"
     >
-      <component :is="app.icon" class="w-8 h-8 text-gray-800 dark:text-white drop-shadow-md" />
+      <component :is="app.icon" class="w-6 h-6 text-black stroke-[2.5px]" />
     </button>
   </div>
 </template>

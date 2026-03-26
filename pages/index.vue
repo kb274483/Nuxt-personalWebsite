@@ -209,20 +209,21 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+  /* Neo-brutalism: fast, snappy, mechanical */
   .window-pop-enter-active,
   .window-pop-leave-active {
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); 
+    transition: all 0.15s ease-out;
   }
 
   .window-pop-enter-from,
   .window-pop-leave-to {
     opacity: 0;
-    transform: scale(0.8); 
+    transform: scale(0.92) translateY(8px);
   }
 
   .window-pop-enter-to,
   .window-pop-leave-from {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) translateY(0);
   }
 </style>

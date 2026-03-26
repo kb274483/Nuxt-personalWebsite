@@ -1,64 +1,75 @@
 <template>
-  <div class="w-full h-12 bg-slate-400/70 dark:bg-stone-600/50 backdrop-blur-md text-gray-900 dark:text-white flex items-center justify-between px-4 text-xs font-medium select-none z-50 fixed top-0 left-0 border-b border-gray-200/50 dark:border-white/10 shadow-sm transition-colors duration-300">
-    <div class="flex items-center space-x-4">
-      <span 
-        ref="titleRef" 
-        class="font-bold text-base inline-block cursor-grab active:cursor-grabbing"
+  <div class="w-full h-12 bg-neo-bg dark:bg-black border-b-4 border-black dark:border-white text-black dark:text-white flex items-center justify-between px-3 select-none z-50 fixed top-0 left-0 transition-colors duration-300">
+
+    <!-- LEFT: Logo + Social Links -->
+    <div class="flex items-center gap-3">
+      <!-- Logo sticker -->
+      <span
+        ref="titleRef"
+        class="inline-flex items-center h-8 px-3 bg-[#FFD93D] dark:bg-white border-2 border-black font-black text-sm uppercase tracking-widest text-black cursor-grab active:cursor-grabbing shadow-[3px_3px_0px_0px_#000] dark:shadow-[3px_3px_0px_0px_#fff] select-none"
         :style="{ transform: `translate3d(${titleX}px, ${titleY}px, 0)` }"
       >
-        Roy Space
+        ROY SPACE
       </span>
-      <div class="flex items-center gap-4">
-        <AnimationMenu 
-          :items="socialLinks" 
-          :gap="45"
-          :auto-close="false"
-          direction="right" 
-          item-size="w-8 h-8"
-        />
-      </div>
+
+      <!-- Social Links -->
+      <AnimationMenu
+        :items="socialLinks"
+        :gap="45"
+        :auto-close="false"
+        direction="right"
+        item-size="w-8 h-8"
+      />
     </div>
-    <div class="flex items-center space-x-3">
-      <div class="relative group">
-        <!-- 最小化視窗數量 -->
-        <div @click="isMinWindowsList = !isMinWindowsList"
-          role="button"
+
+    <!-- RIGHT: Minimized windows + Theme toggle -->
+    <div class="flex items-center gap-2">
+
+      <!-- Minimized window count -->
+      <div class="relative">
+        <button
+          @click="isMinWindowsList = !isMinWindowsList"
           aria-label="Show minimized windows"
-          class="flex items-center justify-center w-8 h-8 bg-gray-200/50 dark:bg-white/10 rounded-md cursor-pointer overflow-hidden relative">
+          class="w-9 h-9 border-2 border-black dark:border-white font-black text-sm flex items-center justify-center shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] hover:bg-neo-accent hover:border-black transition-none active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+        >
           <Transition name="slide-up" mode="out-in">
-            <span :key="minWindows.length" class="absolute font-bold font-mono">
+            <span :key="minWindows.length" class="absolute font-black font-mono">
               {{ minWindows.length }}
             </span>
           </Transition>
-        </div>
+        </button>
 
-        <!-- 最小化視窗選單  -->
-        <div v-if="isMinWindowsList && minWindows.length > 0"
-          class="absolute top-full right-0 mt-2 w-48 bg-white/90 dark:bg-stone-800/90 backdrop-blur-md rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden p-1">
-          <div 
-            v-for="window in minWindows" 
+        <!-- Minimized windows list -->
+        <div
+          v-if="isMinWindowsList && minWindows.length > 0"
+          class="absolute top-full right-0 mt-2 w-52 bg-neo-bg dark:bg-black border-4 border-black dark:border-white shadow-[6px_6px_0px_0px_#000] dark:shadow-[6px_6px_0px_0px_#fff] overflow-hidden"
+        >
+          <button
+            v-for="window in minWindows"
             :key="window.id"
             @click="openMinWindow(window.id)"
-            role="button"
             :aria-label="'Open minimized window: ' + window.title"
-            class="px-4 py-2 text-sm rounded hover:bg-stone-300/50 hover:text-black dark:hover:text-white cursor-pointer transition-colors truncate flex items-center gap-2"
+            class="w-full px-4 py-2 text-sm font-bold uppercase tracking-wide text-left flex items-center gap-2 border-b-2 border-black dark:border-white last:border-b-0 hover:bg-neo-secondary dark:hover:bg-neo-secondary dark:hover:text-black transition-none"
           >
-            <AppWindow class="w-4 h-4" />
-            {{ window.title }}
-          </div>
+            <AppWindow class="w-4 h-4 shrink-0" />
+            <span class="truncate">{{ window.title }}</span>
+          </button>
         </div>
       </div>
-      <button 
+
+      <!-- Theme toggle -->
+      <button
         ref="themeBtnRef"
-        @click="handleThemeChange($event)" 
-        class="p-2 rounded-md hover:bg-gray-200/50 dark:hover:bg-white/10 transition-colors"
+        @click="handleThemeChange($event)"
         :title="isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
         :aria-label="isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+        class="w-9 h-9 border-2 border-black dark:border-white flex items-center justify-center shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] hover:bg-neo-muted hover:border-black transition-none active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
         :style="{ transform: `translate3d(${btnX}px, ${btnY}px, 0)` }"
       >
-        <Sun v-show="isDark" class="w-8 h-8" />
-        <Moon v-show="!isDark" class="w-8 h-8" />
+        <Sun v-show="isDark"  class="w-5 h-5 stroke-[2.5px]" />
+        <Moon v-show="!isDark" class="w-5 h-5 stroke-[2.5px]" />
       </button>
+
     </div>
   </div>
 </template>
@@ -77,10 +88,8 @@ const toggleDark = useToggle(isDark)
 const windowStore = useWindowManager()
 const gravityManager = useGravityManager()
 
-// Physics refs
 const titleRef = ref<HTMLElement | null>(null)
 const themeBtnRef = ref<HTMLElement | null>(null)
-
 
 const { x: titleX, y: titleY, startDrag, moveDrag, endDrag } = usePhysicsCalc(titleRef)
 const { x: btnX, y: btnY } = usePhysicsCalc(themeBtnRef)
@@ -91,41 +100,38 @@ const socialLinks: AnimeMenuItem[] = [
     icon: '/github-logo.png',
     href: 'https://github.com/kb274483',
     alt: 'GitHub Profile',
-    bgColor: 'bg-white/70 dark:bg-white/50'
+    bgColor: 'bg-white border-2 border-black'
   },
   {
     name: 'Notion',
     icon: '/notion-logo.png',
     href: 'https://delirious-workshop-239.notion.site/Roy-s-Front-end-experience-note-151d63554ba44572b9c114a4bb9b1628?source=copy_link',
     alt: 'Notion Notes',
-    bgColor: 'bg-white/70 dark:bg-white/50'
+    bgColor: 'bg-white border-2 border-black'
   },
   {
     name: 'Instagram',
     icon: '/instagram-logo.png',
     href: 'https://www.instagram.com/royphotospace?igsh=MXJxbDFjemhmYnNmaA%3D%3D&utm_source=qr',
     alt: 'Instagram',
-    bgColor: 'bg-white/70 dark:bg-white/50'
+    bgColor: 'bg-white border-2 border-black'
   }
-];
+]
 
-// 取得縮小視窗的數量 
 const minWindows = computed(() => windowStore.windows.filter(w => w.isMinimized))
 const isMinWindowsList = ref<boolean>(false)
 
-// 開啟最小化視窗
 const openMinWindow = (id: string) => {
   windowStore.toggleMinimize(id)
   isMinWindowsList.value = false
 }
 
-// 切換主題
-const handleThemeChange = (event: MouseEvent)=>{
-  const transitionCheck = 
-    'startViewTransition' in document && 
+const handleThemeChange = (event: MouseEvent) => {
+  const transitionCheck =
+    'startViewTransition' in document &&
     !window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-  if(!transitionCheck){
+  if (!transitionCheck) {
     toggleDark()
     return
   }
@@ -140,28 +146,20 @@ const handleThemeChange = (event: MouseEvent)=>{
     toggleDark()
     await nextTick()
   })
-
 }
 
-// 設定拖曳
 useDraggable(titleRef, {
   initialValue: { x: 0, y: 0 },
   handle: titleRef,
   disabled: computed(() => !gravityManager.isGravityEnabled),
   onStart: (_, event: PointerEvent) => {
-    if(gravityManager.isGravityEnabled) {
-      startDrag(event.clientX, event.clientY)
-    }
+    if (gravityManager.isGravityEnabled) startDrag(event.clientX, event.clientY)
   },
   onMove: (_, event: PointerEvent) => {
-    if(gravityManager.isGravityEnabled) {
-      moveDrag(event.clientX, event.clientY)
-    }
+    if (gravityManager.isGravityEnabled) moveDrag(event.clientX, event.clientY)
   },
   onEnd: () => {
-    if (gravityManager.isGravityEnabled) {
-      endDrag()
-    }
+    if (gravityManager.isGravityEnabled) endDrag()
   }
 })
 </script>
@@ -169,14 +167,12 @@ useDraggable(titleRef, {
 <style scoped>
 .slide-up-enter-active,
 .slide-up-leave-active {
-  transition: all 0.3s ease-out;
+  transition: all 0.15s ease-out;
 }
-
 .slide-up-enter-from {
   opacity: 0;
   transform: translateY(100%);
 }
-
 .slide-up-leave-to {
   opacity: 0;
   transform: translateY(-100%);
