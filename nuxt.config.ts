@@ -6,22 +6,14 @@ export default defineNuxtConfig({
         lang: "zh-TW",
       },
       meta: [
-        { name: 'description', content: 'Roy\'s Personal Website | developer portfolio, photography gallery, and travel map.' },
+        {
+          name: "description",
+          content:
+            "Roy's Personal Website | developer portfolio, photography gallery, and travel map.",
+        },
       ],
       title: "Roy's Personal Website",
-      link: [
-        { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
-        { rel: "preconnect", href: "https://fonts.googleapis.com" },
-        {
-          rel: "preconnect",
-          href: "https://fonts.gstatic.com",
-          crossorigin: "",
-        },
-        {
-          rel: "stylesheet",
-          href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700;900&display=swap",
-        },
-      ],
+      link: [{ rel: "icon", type: "image/x-icon", href: "/favicon.ico" }],
     },
   },
   devServer: {
@@ -31,7 +23,19 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
   srcDir: ".",
-  modules: ["@pinia/nuxt", "@nuxtjs/tailwindcss", "@vueuse/nuxt"],
+  modules: [
+    "@pinia/nuxt",
+    "@nuxtjs/tailwindcss",
+    "@vueuse/nuxt",
+    [
+      "@nuxtjs/google-fonts",
+      {
+        families: { "Space Grotesk": [400, 500, 700, 900] },
+        display: "swap",
+        preload: true,
+      },
+    ],
+  ],
   css: ["~/assets/css/main.css"],
   postcss: {
     plugins: {
