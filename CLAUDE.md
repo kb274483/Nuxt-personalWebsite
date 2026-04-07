@@ -25,14 +25,17 @@ All application state flows through these stores:
 | `desktopItemsManager` | Desktop icons (apps + user-created files); persists positions and user files to `localStorage` |
 | `modalManager` | Global modal overlay (confirmations, alerts) |
 | `photoManager` | Photography gallery data fetched from Supabase |
-| `gravityManager` | Physics simulation for desktop pets (cats) |
+| `gravityManager` | Tracks cat positions/radii for physics interactions; `isGravityEnabled` toggles draggable logo behavior |
 
 ### Window System
 
-- `Window.vue` is the draggable/resizable container
+- `Window.vue` is the draggable/resizable container using `@vueuse/core`'s `useDraggable`
 - Each window renders a `component` string (e.g. `'Resume'`, `'Photos'`) via dynamic `<component :is="...">` in `pages/index.vue`
-- On mobile, windows auto-maximize and are non-draggable
+- Component resolution happens in the `getComponent()` switch in `pages/index.vue` — **adding a new app requires both an entry in `appsDefault` array AND a case in `getComponent()`**
+- On mobile (`useIsMobile`), windows auto-maximize and are non-draggable
 - `useBoundaryCheck.ts` prevents windows from being dragged off-screen
+- `TOP_OFFSET = 48` is hardcoded in both `windowManager.ts` and `Window.vue` — tied to `SystemBar` height
+- Window close uses `animejs` (`waapi`) for the exit animation before calling `store.closeWindow()`
 
 ### Built-in Apps (`components/apps/`)
 
@@ -49,23 +52,34 @@ All application state flows through these stores:
 
 `AppItem` type (`types/appItem.type.ts`) represents both built-in apps (`app_type: 'app'`) and user-created text files (`app_type: 'file'`). Desktop icon positions persist in `localStorage` via `desktopItemsManager`.
 
+- `localStorage` keys: `desktopItemPositions` (all icon positions) and `userCreatedFiles` (user text files with content)
+- On mobile, stored positions are ignored and defaults are used
+
+### Desktop Cat System (`components/DesktopCat.vue`)
+
+Canvas-based sprite animation system with 3 cats rendered via `requestAnimationFrame`. Cats walk, run, sleep, and react to clicks. Clicking a cat 5 times triggers an "evolution" easter egg (giant scale). Cat positions are reported to `gravityManager` so other elements can react to them.
+
 ### Composables (`composables/`)
 
 - `useWallpaper` — `createSharedComposable` wrapping VueUse `useLocalStorage`; shared wallpaper state + CSS style computed
-- `useIsMobile` — Detects mobile breakpoint; controls window/item behavior differences
+- `useIsMobile` — Detects mobile via user-agent OR `window.innerWidth < 768`; controls window/item behavior differences
 - `useBoundaryCheck` — Viewport boundary clamping for drag operations
-- `usePhysicsCalc` — Physics helpers for the cat gravity system
+- `usePhysicsCalc` — Physics spring/bounce helpers used in `SystemBar` for the draggable logo and theme button
 - `api/usePhotoApi.ts` — Supabase photo data fetching
+
+### SSR Safety
+
+Use `import.meta.client` guards (not `typeof window !== 'undefined'`) whenever accessing browser APIs. The store `windowManager` uses this pattern extensively.
 
 ### Styling
 
-- Tailwind CSS with `darkMode: 'class'`
-- Dark/light theme toggled via CSS class on `<html>`; persisted through Settings app
+- Tailwind CSS with `darkMode: 'class'`; neo-brutalism aesthetic (bold borders, yellow `#FFD93D` accents, hard shadows)
+- Dark/light theme toggled via `document.startViewTransition` when available, falling back to instant toggle; persisted via VueUse `useDark`
 - Global styles in `assets/css/main.css`
 
 ### External Services
 
-Supabase is configured via environment variables (required for the Gallery app):
+Supabase is provided via `plugins/supabase.client.ts` and accessed in composables as `useNuxtApp().$supabase`. Required env vars:
 ```
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=

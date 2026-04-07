@@ -76,13 +76,13 @@
               </p>
               <div class="flex gap-2" @click.stop>
                 <a :href="value.github" target="_blank" class="hover:scale-110 transition-transform opacity-60 hover:opacity-100" title="View Source">
-                  <img src="@/public/github-logo.png" alt="github" class="w-5 h-5">
+                  <img src="@/public/github-logo.svg" alt="github" class="w-5 h-5">
                 </a>
                 <a v-if="value.github2" :href="value.github2" target="_blank" class="hover:scale-110 transition-transform opacity-60 hover:opacity-100">
-                  <img src="@/public/github-logo.png" alt="github" class="w-5 h-5">
+                  <img src="@/public/github-logo.svg" alt="github" class="w-5 h-5">
                 </a>
                 <a v-if="value.notion" :href="value.notion" target="_blank" class="hover:scale-110 transition-transform opacity-60 hover:opacity-100" title="View Docs">
-                  <img src="@/public/notion-logo.png" alt="notion" class="w-5 h-5">
+                  <img src="@/public/notion-logo.svg" alt="notion" class="w-5 h-5">
                 </a>
               </div>
             </div>

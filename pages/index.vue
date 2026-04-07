@@ -135,7 +135,7 @@ const getComponent = (name: string) => {
     case 'Code Works': return resolveComponent('AppsBrowser')
     case 'Gallery': return resolveComponent('AppsPhotos')
     case 'Settings': return resolveComponent('AppsSettings')
-    case 'Travel Path': return resolveComponent('AppsTravel')
+    case 'Travel Path': return defineAsyncComponent(() => import('~/components/apps/Travel.vue'))
     case 'TextEditor': return TextEditor
     default: return resolveComponent(name)
   }

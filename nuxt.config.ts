@@ -5,6 +5,9 @@ export default defineNuxtConfig({
       htmlAttrs: {
         lang: "zh-TW",
       },
+      meta: [
+        { name: 'description', content: 'Roy\'s Personal Website | developer portfolio, photography gallery, and travel map.' },
+      ],
       title: "Roy's Personal Website",
       link: [
         { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
@@ -16,7 +19,7 @@ export default defineNuxtConfig({
         },
         {
           rel: "stylesheet",
-          href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700;900&display=block",
+          href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700;900&display=swap",
         },
       ],
     },

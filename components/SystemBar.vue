@@ -29,7 +29,7 @@
       <div class="relative">
         <button
           @click="isMinWindowsList = !isMinWindowsList"
-          aria-label="Show minimized windows"
+          :aria-label="`Show ${minWindows.length} minimized windows`"
           class="w-9 h-9 border-2 border-black dark:border-white font-black text-sm flex items-center justify-center shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] hover:bg-neo-accent hover:border-black transition-none active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
         >
           <Transition name="slide-up" mode="out-in">
@@ -97,21 +97,21 @@ const { x: btnX, y: btnY } = usePhysicsCalc(themeBtnRef)
 const socialLinks: AnimeMenuItem[] = [
   {
     name: 'Github',
-    icon: '/github-logo.png',
+    icon: '/github-logo.svg',
     href: 'https://github.com/kb274483',
     alt: 'GitHub Profile',
     bgColor: 'bg-white border-2 border-black'
   },
   {
     name: 'Notion',
-    icon: '/notion-logo.png',
+    icon: '/notion-logo.svg',
     href: 'https://delirious-workshop-239.notion.site/Roy-s-Front-end-experience-note-151d63554ba44572b9c114a4bb9b1628?source=copy_link',
     alt: 'Notion Notes',
     bgColor: 'bg-white border-2 border-black'
   },
   {
     name: 'Instagram',
-    icon: '/instagram-logo.png',
+    icon: '/instagram-logo.svg',
     href: 'https://www.instagram.com/royphotospace?igsh=MXJxbDFjemhmYnNmaA%3D%3D&utm_source=qr',
     alt: 'Instagram',
     bgColor: 'bg-white border-2 border-black'
