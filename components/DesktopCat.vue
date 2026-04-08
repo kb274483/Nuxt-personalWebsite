@@ -21,9 +21,9 @@ const gravityManager = useGravityManager()
 // 預載入貓貓圖片
 useHead({
   link: [
-    { rel: 'preload', as: 'image', href: '/cat_sprite_ban.png' },
-    { rel: 'preload', as: 'image', href: '/cat_sprite_yahoo.png' },
-    { rel: 'preload', as: 'image', href: '/cat_sprite_amei.png' }
+    { rel: 'preload', as: 'image', href: '/cat_sprite_ban.webp' },
+    { rel: 'preload', as: 'image', href: '/cat_sprite_yahoo.webp' },
+    { rel: 'preload', as: 'image', href: '/cat_sprite_amei.webp' }
   ]
 })
 
@@ -87,9 +87,9 @@ const init = () => {
   window.addEventListener('resize', resizeCanvas)
 
   const SPRITE_SRC = [
-    { name: 'A Ben', src: '/cat_sprite_ban.png' },
-    { name: 'Yahoo', src: '/cat_sprite_yahoo.png' },
-    { name: 'A Mei', src: '/cat_sprite_amei.png' },
+    { name: 'A Ben', src: '/cat_sprite_ban.webp' },
+    { name: 'Yahoo', src: '/cat_sprite_yahoo.webp' },
+    { name: 'A Mei', src: '/cat_sprite_amei.webp' },
   ]
   
   const groundY = canvas.height - 50 

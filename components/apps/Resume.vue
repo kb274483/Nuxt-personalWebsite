@@ -27,7 +27,7 @@
         <div class="flex justify-between items-center max-w-2xl mx-auto">
           <div class="relative inline-block group">
             <div class="absolute inset-0 bg-slate-200 dark:bg-stone-700 rounded-full blur-lg opacity-50 group-hover:opacity-80 transition-opacity duration-500"></div>
-            <img src="/cat_sprite_amei.png" alt="Avatar" class="relative w-24 h-24 rounded-full bg-white dark:bg-stone-800 p-1 object-contain shadow-lg border border-slate-100 dark:border-stone-700" />
+            <img src="/cat_sprite_amei.webp" alt="Avatar" class="relative w-24 h-24 rounded-full bg-white dark:bg-stone-800 p-1 object-contain shadow-lg border border-slate-100 dark:border-stone-700" />
           </div>
   
           <div>
