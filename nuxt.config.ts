@@ -15,9 +15,9 @@ export default defineNuxtConfig({
       title: "Roy's Personal Website",
       link: [
         { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
-        { rel: "preload", as: "image", href: "/images/cat_sprite_ban.webp" },
-        { rel: "preload", as: "image", href: "/images/cat_sprite_yahoo.webp" },
-        { rel: "preload", as: "image", href: "/images/cat_sprite_amei.webp" },
+        { rel: "preload", as: "image", href: "/cat_sprite_ban.webp" },
+        { rel: "preload", as: "image", href: "/cat_sprite_yahoo.webp" },
+        { rel: "preload", as: "image", href: "/cat_sprite_amei.webp" },
       ],
     },
   },
