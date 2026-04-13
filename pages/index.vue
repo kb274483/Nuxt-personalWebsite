@@ -129,17 +129,16 @@ const rightClickMenuRef = useTemplateRef<InstanceType<typeof RightClickMenu>>('r
 const rightClickMenu = ref<{ x: number, y: number }>({ x: 0, y: 0 })
 
 const apps = computed(() => useDesktopItemsManager().desktopItems)
-const getComponent = (name: string) => {
-  switch (name) {
-    case 'Resume': return resolveComponent('AppsResume')
-    case 'Code Works': return resolveComponent('AppsBrowser')
-    case 'Gallery': return resolveComponent('AppsPhotos')
-    case 'Settings': return resolveComponent('AppsSettings')
-    case 'Travel Path': return resolveComponent('AppsTravel')
-    case 'TextEditor': return TextEditor
-    default: return resolveComponent(name)
-  }
+
+const componentMap: Record<string, Component> = {                                              
+  'Resume': defineAsyncComponent(() => import('~/components/apps/Resume.vue')), 
+  'Code Works': defineAsyncComponent(() => import('~/components/apps/Browser.vue')),
+  'Gallery': defineAsyncComponent(() => import('~/components/apps/Photos.vue')),
+  'Settings': defineAsyncComponent(() => import('~/components/apps/Settings.vue')), 
+  'Travel Path': defineAsyncComponent(() => import('~/components/apps/Travel.vue')), 
+  'TextEditor': TextEditor,
 }
+const getComponent = (name: string) => componentMap[name] ?? resolveComponent(name)
 
 const menuClickID = ref<string | null>(null)
 const handleContextMenu = async (e: MouseEvent) => {
