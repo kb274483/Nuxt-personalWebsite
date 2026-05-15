@@ -52,7 +52,7 @@ All application state flows through these stores:
 
 `AppItem` type (`types/appItem.type.ts`) represents both built-in apps (`app_type: 'app'`) and user-created text files (`app_type: 'file'`). Desktop icon positions persist in `localStorage` via `desktopItemsManager`.
 
-- `localStorage` keys: `desktopItemPositions` (all icon positions) and `userCreatedFiles` (user text files with content)
+- `localStorage` keys: `desktopItemPositions_v2` (all icon positions) and `userCreatedFiles` (user text files with content)
 - On mobile, stored positions are ignored and defaults are used
 
 ### Desktop Cat System (`components/DesktopCat.vue`)

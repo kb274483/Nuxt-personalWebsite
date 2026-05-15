@@ -63,7 +63,7 @@ export const useDesktopItemsManager = defineStore('desktopItemsManager', () => {
         return acc
       }, {} as Record<string, { x: number, y: number }>)
       
-      localStorage.setItem('desktopItemPositions', JSON.stringify(positions))
+      localStorage.setItem('desktopItemPositions_v2', JSON.stringify(positions))
     }
   }
 

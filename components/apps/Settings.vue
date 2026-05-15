@@ -236,7 +236,7 @@ const resetDesktopItems = () => {
         resetDesktopItemsRef.value?.classList.remove('animate-spin')
     }, 1000)
 
-    localStorage.removeItem('desktopItemPositions')
+    localStorage.removeItem('desktopItemPositions_v2')
     useDesktopItemsManager().setupDesktopItems(createDefaultDesktopApps())
 }
 
