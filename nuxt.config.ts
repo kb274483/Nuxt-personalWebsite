@@ -40,6 +40,7 @@ export default defineNuxtConfig({
         preload: true,
       },
     ],
+    '@vercel/speed-insights',
   ],
   css: ["~/assets/css/main.css"],
   postcss: {
