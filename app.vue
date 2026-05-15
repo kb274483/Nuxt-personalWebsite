@@ -1,4 +1,5 @@
 <template>
+  <IntroAnime />
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
