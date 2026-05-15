@@ -41,13 +41,14 @@
 </template>
 
 <script setup lang="ts">
-import { Code, Image, Settings, FileUser, Trash2, CircleAlert, Plane } from 'lucide-vue-next'
+import { Trash2, CircleAlert } from 'lucide-vue-next'
 import { onMounted, onBeforeUnmount, computed, nextTick, ref, useTemplateRef } from 'vue'
 import { useWindowManager } from '~/stores/windowManager'
 import { useDesktopItemsManager } from '~/stores/desktopItemsManager'
 import type { MenuItem } from '~/types/menu.type'
 import { useModalManager } from '~/stores/modalManager'
 import { usePhotoManager } from '~/stores/photoManager'
+import { createDefaultDesktopApps } from '~/data/defaultDesktopApps'
 // Components
 import Modal from '~/components/Modal.vue'
 import RightClickMenu from '~/components/apps/RightClickMenu.vue'
@@ -188,14 +189,7 @@ const closeRightClickMenu = () => {
 }
 
 onMounted(() => {
-  const appsDefault = [
-    { id: 'resume', name: 'Resume', icon: FileUser, disabled_delete: true, x: 10, y: 30, width: 40, height: 40, zIndex: 1 },
-    { id: 'browser', name: 'Code Works', icon: Code, disabled_delete: true, x: 10, y: 110, width: 40, height: 40, zIndex: 1 },
-    { id: 'photos', name: 'Gallery', icon: Image, disabled_delete: true, x: 10, y: 190, width: 40, height: 40, zIndex: 1 },
-    { id: 'settings', name: 'Settings', icon: Settings, disabled_delete: true, x: 10, y: 270, width: 40, height: 40, zIndex: 1 },
-    { id: 'travel', name: 'Travel Path', icon: Plane, disabled_delete: true, x: 10, y: 340, width: 40, height: 40, zIndex: 1 },
-  ]
-  useDesktopItemsManager().setupDesktopItems(appsDefault)
+  useDesktopItemsManager().setupDesktopItems(createDefaultDesktopApps())
   usePhotoManager().initialize()
   window.addEventListener('contextmenu', handleContextMenu)
   window.addEventListener('click', closeRightClickMenu)

@@ -16,7 +16,7 @@ export const useDesktopItemsManager = defineStore('desktopItemsManager', () => {
     defaultApps = defaultItems
     
     // 取得預設項目在localStorage中的座標
-    const storedPositionsStr = localStorage.getItem('desktopItemPositions')
+    const storedPositionsStr = localStorage.getItem('desktopItemPositions_v2')
     let storedPositions: Record<string, { x: number, y: number }> = {}
 
     if (storedPositionsStr) {

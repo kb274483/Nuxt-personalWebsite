@@ -183,13 +183,14 @@
 
 <script setup lang="ts">
 import { useDark, useToggle } from '@vueuse/core'
-import { RotateCw, FileUser, Code, Image, Settings, Plane, Skull, Check } from 'lucide-vue-next'
+import { RotateCw, Skull, Check } from 'lucide-vue-next'
 import { useTemplateRef, onMounted, computed } from 'vue'
 import { Sun, Moon } from 'lucide-vue-next'
 import { useWallpaper } from '~/composables/useWallpaper'
 import { usePhotoManager } from '~/stores/photoManager'
 import { useGravityManager } from '~/stores/gravityManager'
 import type { Photo } from '~/types/photo.type'
+import { createDefaultDesktopApps } from '~/data/defaultDesktopApps'
 
 // 桌布狀態
 const { wallpaper,
@@ -236,14 +237,7 @@ const resetDesktopItems = () => {
     }, 1000)
 
     localStorage.removeItem('desktopItemPositions')
-    const appsDefault = [
-        { id: 'resume', name: 'Resume', icon: FileUser, disabled_delete: true, x: 10, y: 30, width: 48, height: 48, zIndex: 1 },
-        { id: 'browser', name: 'Code Works', icon: Code, disabled_delete: true, x: 10, y: 110, width: 48, height: 48, zIndex: 1 },
-        { id: 'photos', name: 'Gallery', icon: Image, disabled_delete: true, x: 10, y: 190, width: 48, height: 48, zIndex: 1 },
-        { id: 'settings', name: 'Settings', icon: Settings, disabled_delete: true, x: 10, y: 270, width: 48, height: 48, zIndex: 1 },
-        { id: 'travel', name: 'Travel Path', icon: Plane, disabled_delete: true, x: 10, y: 340, width: 48, height: 48, zIndex: 1 },
-    ]
-    useDesktopItemsManager().setupDesktopItems(appsDefault)
+    useDesktopItemsManager().setupDesktopItems(createDefaultDesktopApps())
 }
 
 const tricksyButton = () => {
