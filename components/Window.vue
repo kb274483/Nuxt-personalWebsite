@@ -69,7 +69,8 @@
 import { Minimize2, Maximize2, CircleX, ArrowBigDown } from 'lucide-vue-next'
 import { useTemplateRef } from 'vue'
 import { useDraggable } from '@vueuse/core'
-import { useWindowManager, type WindowState } from '~/stores/windowManager'
+import type { WindowState } from '~/stores/windowManager'
+import { useWindowManager } from '~/stores/windowManager'
 import { useBoundaryCheck } from '~/composables/useBoundaryCheck'
 import { useIsMobile } from '~/composables/useIsMobile'
 import { waapi, cubicBezier } from 'animejs'
@@ -175,6 +176,7 @@ const startResize = (e: MouseEvent) => {
   window.addEventListener('mousemove', onMouseMove)
   window.addEventListener('mouseup', onMouseUp)
 }
+
 </script>
 
 <style scoped>

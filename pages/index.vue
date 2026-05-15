@@ -188,16 +188,22 @@ const closeRightClickMenu = () => {
   rightClickMenu.value.y = 0
 }
 
+const handleWindowResize = () => {
+  store.clampAllWindows()
+}
+
 onMounted(() => {
   useDesktopItemsManager().setupDesktopItems(createDefaultDesktopApps())
   usePhotoManager().initialize()
   window.addEventListener('contextmenu', handleContextMenu)
   window.addEventListener('click', closeRightClickMenu)
+  window.addEventListener('resize', handleWindowResize)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('contextmenu', handleContextMenu)
   window.removeEventListener('click', closeRightClickMenu)
+  window.removeEventListener('resize', handleWindowResize)
 })
 </script>
 

@@ -128,11 +128,8 @@ export const useWindowManager = defineStore('windowManager', () => {
         }
     }
 
-    if (import.meta.client) {
-        window.addEventListener('resize', () => {
-            // 螢幕尺寸改變，重新計算視窗位置
-            windows.value.forEach(clampWindowInViewport)
-        })
+    const clampAllWindows = () => {
+        windows.value.forEach(clampWindowInViewport)
     }
 
     return {
@@ -144,6 +141,8 @@ export const useWindowManager = defineStore('windowManager', () => {
         toggleMinimize,
         toggleMaximize,
         updateWindowPosition,
-        updateWindowSize
+        updateWindowSize,
+        clampWindowInViewport,
+        clampAllWindows
     }
 })

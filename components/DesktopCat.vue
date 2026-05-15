@@ -114,7 +114,8 @@ const init = () => {
     }
   })
 
-  window.addEventListener('mousemove', (e: MouseEvent) => handleMouseMove(e, cats[0]!))
+  // 目前沒有 mousemove 互動邏輯，先停用
+  // window.addEventListener('mousemove', handleMouseMove)
   window.addEventListener('mousedown', handleInteraction)
   window.addEventListener('touchstart', handleInteraction)
 }
@@ -407,9 +408,11 @@ const playWithCat = (cat: CatState) => {
 
 
 // 滑鼠事件
-const handleMouseMove = (e: MouseEvent, cat: CatState) => {
-  // if (!cat.isInteracting) {}
-}
+// 目前沒有 mousemove 互動邏輯，先保留入口但停用註冊。
+// const handleMouseMove = (e: MouseEvent) => {
+//   const firstCat = cats[0]
+//   if (!firstCat) return
+// }
 
 const handleInteraction = (e: Event) => {
   if(e instanceof MouseEvent && e.button !== 0) return
@@ -527,7 +530,8 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', resizeCanvas)
-  window.removeEventListener('mousemove', (e: MouseEvent) => handleMouseMove(e, cats[0]!))
+  // mousemove 監聽器目前停用。
+  // window.removeEventListener('mousemove', handleMouseMove)
   window.removeEventListener('mousedown', handleInteraction)
   window.removeEventListener('touchstart', handleInteraction)
   if(animationFrameId) cancelAnimationFrame(animationFrameId)
