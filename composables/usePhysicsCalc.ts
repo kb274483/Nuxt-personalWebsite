@@ -1,4 +1,4 @@
-import { ref, watch, type Ref } from 'vue'
+import { ref, watch, onScopeDispose, type Ref } from 'vue'
 import { useGravityManager } from '~/stores/gravityManager'
 
 export const usePhysicsCalc = (targetRef: Ref<HTMLElement | null>) => {
@@ -204,6 +204,8 @@ export const usePhysicsCalc = (targetRef: Ref<HTMLElement | null>) => {
       stopPhysics()
     }
   }, { immediate: true })
+
+  onScopeDispose(() => stopPhysics())
 
   return {
     x,
