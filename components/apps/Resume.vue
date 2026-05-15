@@ -35,20 +35,22 @@
               李浩銓 Roy Lee
             </h1>
             <p class="text-lg text-slate-500 dark:text-slate-400 font-medium tracking-wide">
-              Front-End Engineer（熱愛攝影與旅遊的前端工程師。）
+              Front-End Engineer
             </p>
           </div>
         </div>
         
         <p class="max-w-2xl mx-auto mt-6 text-slate-600 text-start dark:text-slate-400 leading-relaxed text-base">
           我畢業於資訊工程系，起初並未在程式開發中找到熱情，因此投入其他產業工作多年。<br class="hidden md:block" />
-          然而在重拾學習程式的過程中，我逐漸發現解決問題與構建產品的樂趣。
+          然而在重拾學習程式的過程中，我逐漸發現解決問題與構建產品的樂趣，並轉職成為前端工程師。
+          目前專注於 Vue 3 為核心的網頁開發，熟悉 Tailwind CSS、Firebase 與 AWS 相關服務，
+          也持續透過 Side Project 學習 Golang、Node.js 與更完整的前後端架構。
         </p>
         
         <div class="flex justify-center gap-6 mt-8">
           <a href="mailto:kb274483@gmail.com" class="link-hover">Email</a>
           <a href="https://github.com/kb274483" target="_blank" class="link-hover">Github</a>
-          <a href="https://www.cake.me/resumes/kb274483" target="_blank" class="link-hover">CakeResume</a>
+          <!-- <a href="https://www.cake.me/resumes/kb274483" target="_blank" class="link-hover">CakeResume</a> -->
         </div>
       </header>
 
@@ -57,21 +59,18 @@
         <section class="space-y-8 scroll-reveal">
           <h2 class="section-title">Tech Stack</h2>
           <div class="grid grid-cols-1 gap-6">
-            <div class="minimal-card">
+            <div
+              v-for="stack in techStacks"
+              :key="stack.title"
+              class="minimal-card"
+            >
               <div class="flex items-start justify-between mb-2">
-                <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">Front-end</h3>
+                <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">
+                  {{ stack.title }}
+                </h3>
               </div>
               <p class="text-slate-600 dark:text-slate-400 leading-relaxed">
-                HTML, CSS (SCSS), JavaScript, <strong class="text-slate-800 dark:text-slate-200">Vue.js (Vue 2/3)</strong>, Nuxt, TailwindCSS, Quasar, Qwik
-              </p>
-            </div>
-            
-            <div class="minimal-card">
-               <div class="flex items-start justify-between mb-2">
-                <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">Others</h3>
-              </div>
-              <p class="text-slate-600 dark:text-slate-400 leading-relaxed">
-                AWS (EC2, S3, Lambda), Firebase, Nginx, Golang (Basic)
+                {{ stack.items.join('、') }}
               </p>
             </div>
           </div>
@@ -81,46 +80,98 @@
           <h2 class="section-title">Experience</h2>
           <div class="relative border-l border-slate-300 dark:border-stone-700 ml-3 space-y-16">
             
-            <div class="relative pl-10">
-              <span class="absolute -left-[5px] top-2 h-2.5 w-2.5 rounded-full bg-slate-800 dark:bg-slate-200 ring-4 ring-white dark:ring-stone-900"></span>
+            <div
+              v-for="(job, index) in experiences"
+              :key="job.company"
+              class="relative pl-10"
+            >
+              <span
+                class="absolute -left-[5px] top-2 h-2.5 w-2.5 rounded-full ring-4 ring-white dark:ring-stone-900"
+                :class="index === 0 ? 'bg-slate-800 dark:bg-slate-200' : 'bg-slate-400 dark:bg-stone-600'"
+              ></span>
               <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-                <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100">霍普金斯生醫有限公司</h3>
-                <span class="text-sm font-mono text-slate-500 dark:text-slate-500 mt-1 sm:mt-0">2022.04 ~ Present</span>
+                <div>
+                  <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100">
+                    {{ job.company }}
+                  </h3>
+                  <p class="text-sm text-slate-500 dark:text-slate-500 mt-1">
+                    {{ job.role }}
+                  </p>
+                </div>
+                <span class="text-sm font-mono text-slate-500 dark:text-slate-500 mt-1 sm:mt-0">
+                  {{ job.period }}
+                </span>
               </div>
               <ul class="space-y-3 text-slate-600 dark:text-slate-400 list-disc pl-4 marker:text-slate-400">
-                <li>開發集團品牌官網與活動頁面，負責切版與 API 串接。</li>
-                <li>開發診所掛號預約平台，優化管理流程。</li>
-                <li>舊專案維護與功能優化、新增</li>
-                <li>與資料科學團隊合作，開發互動式數據儀表板。</li>
-                <li>AWS EC2 環境建置、Nginx 設定與資安規則維護。</li>
-              </ul>
-            </div>
-
-            <div class="relative pl-10">
-              <span class="absolute -left-[5px] top-2 h-2.5 w-2.5 rounded-full bg-slate-400 dark:bg-stone-600 ring-4 ring-white dark:ring-stone-900"></span>
-              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-                <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100">翼游數位有限公司</h3>
-                <span class="text-sm font-mono text-slate-500 dark:text-slate-500 mt-1 sm:mt-0">2021.08 ~ 2022.02</span>
-              </div>
-              <ul class="space-y-3 text-slate-600 dark:text-slate-400 list-disc pl-4 marker:text-slate-400">
-                <li>運動賽事直播平台開發 (WebSocket 即時資料)。</li>
-                <li>Vue-element-admin 後台系統開發。</li>
-                <li>SPA 網站開發 (Vue 2)</li>
-                <li>多國語言 (i18n) 與 RWD 響應式設計。</li>
+                <li v-for="item in job.items" :key="item">
+                  {{ item }}
+                </li>
               </ul>
             </div>
 
           </div>
         </section>
 
+        <section class="space-y-8 scroll-reveal">
+          <h2 class="section-title">Project Highlights</h2>
+          <div class="grid grid-cols-1 gap-6">
+            <div
+              v-for="project in projectHighlights"
+              :key="project.title"
+              class="minimal-card"
+            >
+              <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100 mb-2">
+                {{ project.title }}
+              </h3>
+              <p class="text-slate-600 dark:text-slate-400 leading-relaxed">
+                {{ project.description }}
+              </p>
+            </div>
+          </div>
+        </section>
+
         <!-- Side Projects -->
         <section class="space-y-10 scroll-reveal">
           <h2 class="section-title">Side Projects</h2>
-          <div class="minimal-card cursor-pointer" @click="store.openWindow('browser', 'Code Works', 'Code Works')">
+          <div
+            v-for="project in sideProjects"
+            :key="project.name"
+            class="minimal-card"
+          >
             <div class="flex items-center justify-between mb-2">
               <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">
-                Open My Side Projects
+                {{ project.name }}
               </h3>
+            </div>
+            <p class="text-slate-600 dark:text-slate-400 leading-relaxed">
+              {{ project.description }}
+            </p>
+            <p class="mt-3 text-xs font-mono text-slate-500 dark:text-slate-500">
+              {{ project.stack }}
+            </p>
+          </div>
+          <div class="minimal-card cursor-pointer" @click="store.openWindow('browser', 'Code Works', 'Code Works')">
+            <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">
+              Open All Side Projects
+            </h3>
+          </div>
+        </section>
+
+        <section class="space-y-8 scroll-reveal">
+          <h2 class="section-title">Education</h2>
+          <div class="minimal-card">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">
+                  淡江大學
+                </h3>
+                <p class="text-slate-600 dark:text-slate-400 mt-1">
+                  資訊工程學系
+                </p>
+              </div>
+              <span class="text-sm font-mono text-slate-500 dark:text-slate-500 mt-2 sm:mt-0">
+                2010.09 ~ 2014.06
+              </span>
             </div>
           </div>
         </section>
@@ -135,6 +186,80 @@ import { ref } from 'vue'
 import { useWindowManager } from '~/stores/windowManager'
 
 const store = useWindowManager()
+
+const techStacks = [
+  {
+    title: 'Front-end',
+    items: ['HTML', 'CSS / SCSS', 'JavaScript', 'TypeScript', 'Vue 2 / Vue 3', 'Nuxt', 'Tailwind CSS', 'Pinia', 'Quasar', 'Qwik']
+  },
+  {
+    title: 'Back-end & Services',
+    items: ['Firebase', 'Supabase', 'Golang', 'Node.js', 'WebSocket']
+  },
+  {
+    title: 'Infrastructure',
+    items: ['AWS EC2', 'S3', 'VPC', 'NAT', 'Security Group', 'Nginx', 'SSL', 'Reverse Proxy', 'Semi-automated Deployment']
+  }
+]
+
+const experiences = [
+  {
+    company: '霍普金斯生醫有限公司',
+    role: '前端工程師',
+    period: '2022.04 ~ Present',
+    items: [
+      '與 UI 設計師、後端工程師協作，負責 API 串接、RWD 版面與前端功能開發，並能從需求溝通、規格規劃到實作。',
+      '從 0 開發診所掛號預約平台，協助優化櫃台、客服與診所管理流程。',
+      '開發集團旗下品牌官網與活動頁面，包含 Nuxt SSR、Vue SPA、切版與資料串接。',
+      '維護與改善舊 PHP 系統，以 JavaScript 強化資料視覺化與客服作業流程，例如 Google Map 區域資訊呈現與客服面板功能。',
+      '與資料科學團隊合作，將模型與資料轉換為可操作的互動式網頁儀表板。',
+      '參與 AWS EC2、VPC、NAT、Security Group、Nginx、SSL 與反向代理設定，並協助建立半自動部署流程。'
+    ]
+  },
+  {
+    company: '翼游數位有限公司',
+    role: '前端工程師',
+    period: '2021.08 ~ 2022.02',
+    items: [
+      '開發運動賽事直播平台，負責 WebSocket 即時資料串接、互動畫面與 RWD 樣式。',
+      '使用 Vue-element-admin 開發後台系統，與後端工程師協作串接 API 與管理功能。',
+      '參與多個 Vue 2 SPA 專案，處理 i18n 多國語系、版面切版與使用者互動。'
+    ]
+  }
+]
+
+const projectHighlights = [
+  {
+    title: '診所掛號預約平台',
+    description: '以 Vue 3 與 PHP Laravel 為主要技術，從需求討論、流程規劃、畫面實作到前端架構建立皆有參與，協助內部掛號與客服作業數位化。'
+  },
+  {
+    title: '客服與資料視覺化工具',
+    description: '將既有 PHP 後台功能逐步改善為更直覺的操作介面，包含客服面板、Google Map 區域資訊呈現，以及資料儀表板互動化。'
+  },
+  {
+    title: '品牌官網與活動頁',
+    description: '使用 Nuxt、Vue、Tailwind CSS 製作集團品牌網站、活動頁與互動頁面，兼顧 RWD、效能與後端資料串接。'
+  }
+]
+
+const sideProjects = [
+  {
+    name: 'Track Expenses',
+    description: '個人記帳與團體分帳工具，支援圖表分析與 PWA 使用情境。',
+    stack: 'Vue / Quasar / Tailwind CSS / Firebase'
+  },
+  {
+    name: 'Brief URL',
+    description: '短網址服務，從前端、Golang API、Google OAuth 到 AWS EC2 / Nginx 部署皆自行實作。',
+    stack: 'Vue / Golang / AWS EC2 / Nginx / DynamoDB'
+  },
+  {
+    name: 'MeowLog',
+    description: '寵物健康日誌，記錄日常照護、健康狀態與提醒流程。',
+    stack: 'Vue / Quasar / Firebase / Tailwind CSS'
+  }
+]
 
 // 視差捲動邏輯
 const scrollContainer = ref<HTMLElement | null>(null)
@@ -160,7 +285,7 @@ const checkReveal = () => {
     const relativeTop = elementTop - containerTop
     
     // 當元素進入視窗下方 100px時觸發
-    if (relativeTop < containerHeight - 100) { 
+    if (relativeTop < containerHeight - 50) { 
       reveal.classList.add('active')
     }
   })
