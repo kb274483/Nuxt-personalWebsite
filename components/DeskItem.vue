@@ -28,7 +28,7 @@
       class="bg-neo-secondary border-b-2 border-black dark:border-white text-xs text-black font-bold outline-none text-center w-full px-1"
     />
     <p v-else
-      class="text-[10px] text-center text-black dark:text-white font-bold uppercase tracking-wide leading-tight mt-0.5 max-w-[56px] truncate"
+      class="text-[10px] text-center text-black dark:text-white font-bold uppercase tracking-wide leading-tight mt-2 max-w-[56px] text-nowrap"
     >{{ app.name }}</p>
   </div>
   <div

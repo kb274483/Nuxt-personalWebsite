@@ -1,0 +1,70 @@
+import type { DemoItem } from '~/types/demoItem.type'
+
+export const demoItems: DemoItem[] = [
+  {
+    id: '1',
+    name: 'Track Expenses',
+    description: '個人記帳、團體分帳、圖表分析',
+    stack: ['Vue', 'TailwindCSS', 'Firebase', 'Quasar'],
+    url: 'https://trackexpenses-94bfd.web.app/',
+    image: 'https://elasticbeanstalk-ap-northeast-3-320080014524.s3.ap-northeast-3.amazonaws.com/demo_cover/trackExpenese.png',
+    github: 'https://github.com/kb274483/TrackExpenses',
+    notion: 'https://www.notion.so/PWA-112993c5059a80f79ac1e947b53359eb'
+  },
+  {
+    id: '2',
+    name: 'MeowLog',
+    url: 'https://meowlog-9472d.web.app/',
+    description: '寵物健康日誌，讓你更了解你的寵物，為了他們的健康做紀錄',
+    stack: ['Vue', 'Firebase', 'Quasar', 'TailwindCSS'],
+    image: 'https://elasticbeanstalk-ap-northeast-3-320080014524.s3.ap-northeast-3.amazonaws.com/demo_cover/meowlog.png',
+    github: 'https://github.com/kb274483/MeowLog',
+  },
+  {
+    id: '3',
+    name: 'Short Url',
+    url: 'https://brief-url.link/',
+    description: '短網址服務，登入後還可以紀錄瀏覽紀錄 (Open on am:08:00 - pm:10:00)',
+    stack: ['Vue', 'Google OAuth2.0', 'Golang', 'AWS EC2', 'Nginx', 'DynamoDB'],
+    image: 'https://elasticbeanstalk-ap-northeast-3-320080014524.s3.ap-northeast-3.amazonaws.com/demo_cover/brief-url.png',
+    github: 'https://github.com/kb274483/Quasar-ShortUrlWeb',
+    github2: 'https://github.com/kb274483/Golang-ShortUrlServer',
+    notion: 'https://delirious-workshop-239.notion.site/e28da6208afa4978babfcdc8c1627fc6?source=copy_link'
+  },
+  {
+    id: '4',
+    name: 'web-sprite-pet',
+    url: 'https://kb274483.github.io/web-sprite-pet/',
+    description: '可嵌入網頁的桌面寵物 Web Component，支援精靈圖動畫與互動設定',
+    stack: ['TypeScript', 'Web Component', 'Vite'],
+    image: '/cat_sprite_amei.webp',
+    github: 'https://github.com/kb274483/web-sprite-pet',
+  },
+  {
+    id: '5',
+    name: 'Turkiye Travel Memories',
+    url: 'https://qwik-turkiye-travel-memories.vercel.app/',
+    description: '嘗試 Qwik 框架，展示土耳其旅行照片',
+    stack: ['Qwik', 'Cloudinary'],
+    image: 'https://elasticbeanstalk-ap-northeast-3-320080014524.s3.ap-northeast-3.amazonaws.com/demo_cover/Turkiye+Photo.png',
+    github: 'https://github.com/kb274483/Qwik-TurkiyeTravelMemories',
+  },
+  {
+    id: '6',
+    name: 'Party Race',
+    description: '派對競賽遊戲',
+    stack: ['Vue', 'Three.js', 'WebSocket'],
+    url: 'https://party-race-game.vercel.app/',
+    image: 'https://elasticbeanstalk-ap-northeast-3-320080014524.s3.ap-northeast-3.amazonaws.com/demo_cover/party_race.png',
+    github: 'https://github.com/kb274483/Party-race-game',
+  },
+  {
+    id: '7',
+    name: 'Waterfall Layouts',
+    description: '嘗試瀑布流布局，展示照片',
+    stack: ['Vue'],
+    url: 'https://vue-waterfall-layouts-demo.vercel.app/',
+    image: 'https://elasticbeanstalk-ap-northeast-3-320080014524.s3.ap-northeast-3.amazonaws.com/demo_cover/waterfall_layout.png',
+    github: 'https://github.com/kb274483/Vue-WaterfallLayouts',
+  },
+]
