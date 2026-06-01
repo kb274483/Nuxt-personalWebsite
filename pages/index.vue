@@ -136,7 +136,8 @@ const componentMap: Record<string, Component> = {
   'Code Works': defineAsyncComponent(() => import('~/components/apps/Browser.vue')),
   'Gallery': defineAsyncComponent(() => import('~/components/apps/Photos.vue')),
   'Settings': defineAsyncComponent(() => import('~/components/apps/Settings.vue')), 
-  'Travel Path': defineAsyncComponent(() => import('~/components/apps/Travel.vue')), 
+  'Travel Path': defineAsyncComponent(() => import('~/components/apps/Travel.vue')),
+  'MailBox': defineAsyncComponent(() => import('~/components/apps/MailBox.vue')),
   'TextEditor': TextEditor,
 }
 const getComponent = (name: string) => componentMap[name] ?? resolveComponent(name)
