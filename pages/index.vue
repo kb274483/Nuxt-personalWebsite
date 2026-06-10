@@ -68,7 +68,7 @@ const desktopMenu: MenuItem[] = [
     useDesktopItemsManager().addDesktopItem(`
       New Text File (${createdLength + 1}).txt`,
       `This is a new text file created on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`,
-      createdLength * 90
+      createdLength * 100
     )
   }},
   { label: 'Display Settings', action: () => useWindowManager().openWindow('settings', 'Display Settings', 'Settings')},
