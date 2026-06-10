@@ -3,9 +3,13 @@
     ref="canvasContainer" 
     class="flex h-full w-full items-center justify-center bg-white dark:bg-zinc-900"
   >
+    <div
+      class="whiteboard-dot-bg pointer-events-none absolute top-10 inset-0 z-0"
+      aria-hidden="true"
+    />
     <canvas
       ref="canvasRef"
-      class="block h-full w-full touch-none cursor-crosshair"
+      class="absolute top-10 inset-0 z-10 block h-full w-full touch-none cursor-crosshair"
       aria-label="Whiteboard"
       @pointerdown="handlePointerDown"
       @pointerup="handlePointerUp"
@@ -187,3 +191,25 @@ onBeforeUnmount(()=>{
 })
 
 </script>
+
+<style scoped>
+.whiteboard-dot-bg {
+  background-color: #f8fafc;
+  background-image: radial-gradient(
+    circle,
+    rgba(15, 23, 42, 0.22) 1px,
+    transparent 1px
+  );
+  background-position: 0 0;
+  background-size: 16px 16px;
+}
+
+:global(.dark .whiteboard-dot-bg) {
+  background-color: #18181b;
+  background-image: radial-gradient(
+    circle,
+    rgba(244, 244, 245, 0.22) 1px,
+    transparent 1px
+  );
+}
+</style>
