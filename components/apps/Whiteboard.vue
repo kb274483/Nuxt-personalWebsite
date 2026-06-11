@@ -1,7 +1,13 @@
 <template>
   <section 
     ref="canvasContainer" 
-    class="relative flex h-full w-full items-center justify-center bg-white dark:bg-zinc-900"
+    class="canvas-container relative flex h-full w-full items-center justify-center bg-white dark:bg-zinc-900"
+    @pointerdown.stop
+    @pointermove.stop
+    @pointerup.stop
+    @click.stop
+    @mousedown.stop
+    @mouseup.stop
   >
     <div
       class="whiteboard-dot-bg pointer-events-none absolute inset-0 z-0"
@@ -21,34 +27,79 @@
       @pointerleave="handlePointerCancel"
     />
 
-    <div class="absolute z-20 bottom-0 w-full flex justify-center">
-      <div class="bg-gray-900/10 dark:bg-slate-200/10 p-4 rounded-md flex gap-4">
-        <button
-          type="button"
-          aria-label="Pencil tool"
-          @click="activeTool = 'pencil'"
-          :class="getToolButtonClass('pencil')"
-        >
-          <Pencil class="h-8 w-8" />
-        </button>
+    <div class="absolute z-20 bottom-0 inset-x-0 flex justify-center "
+      aria-label="WhiteBoard Tool Bar"
+    >
+      <div class="toolbar pointer-events-auto bg-gray-900/10 dark:bg-slate-200/10 p-4 rounded-md gap-4">
+        <div class="toolbar-buttons">
+          <button
+            type="button"
+            aria-label="Pencil tool"
+            @click="activeTool = 'pencil'"
+            :class="getToolButtonClass('pencil')"
+          >
+            <Pencil class="h-8 w-8" />
+          </button>
+  
+          <button
+            type="button"
+            aria-label="Eraser tool"
+            @click="activeTool = 'eraser'"
+            :class="getToolButtonClass('eraser')"
+          >
+            <Eraser class="h-8 w-8" />
+          </button>
+  
+          <button
+            type="button"
+            aria-label="Pan tool"
+            @click="activeTool = 'pan'"
+            :class="getToolButtonClass('pan')"
+          >
+            <Hand class="h-8 w-8" />
+          </button>
+        </div>
+        
+        <div class="divide h-8 w-0.5 bg-black dark:bg-white divide" aria-hidden="true" />
+        
+        <div class="flex items-center gap-1" aria-label="Pen colors">
+          <button
+            v-for="color in pencilColors"
+            :key="color"
+            type="button"
+            class="h-8 w-8 border-2 border-black transition-none active:translate-x-[1px] active:translate-y-[1px] dark:border-white"
+            :class="penColor === color ? 'ring-2 ring-black ring-offset-2 dark:ring-white dark:ring-offset-zinc-900' : ''"
+            :style="{ backgroundColor: color }"
+            :aria-label="`Set pen color ${color}`"
+            @click="penColor = color"
+          />
+        </div>
 
-        <button
-          type="button"
-          aria-label="Eraser tool"
-          @click="activeTool = 'eraser'"
-          :class="getToolButtonClass('eraser')"
-        >
-          <Eraser class="h-8 w-8" />
-        </button>
+        <label class="flex items-center gap-2 text-xs font-black uppercase text-black dark:text-white">
+          <span>Pen</span>
+          <input
+            v-model.number="penWidth"
+            type="range"
+            min="2"
+            max="20"
+            step="1"
+            class="w-24 accent-[#FFD93D]"
+          >
+          <span class="w-6 text-right">{{ penWidth }}</span>
+        </label>
 
-        <button
-          type="button"
-          aria-label="Pan tool"
-          @click="activeTool = 'pan'"
-          :class="getToolButtonClass('pan')"
-        >
-          <Hand class="h-8 w-8" />
-        </button>
+        <label class="flex items-center gap-2 text-xs font-black uppercase text-black dark:text-white">
+          <span>Eraser</span>
+          <input
+            v-model.number="eraserWidth"
+            type="range"
+            min="8"
+            max="48"
+            step="1"
+            class="w-24 accent-[#FFD93D]"
+          >
+          <span class="w-6 text-right">{{ eraserWidth }}</span>
+        </label>
       </div>
     </div>
   </section>
@@ -57,28 +108,7 @@
 <script setup lang="ts">
 import { Eraser, Hand, Pencil } from 'lucide-vue-next'
 import { onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
-
-type ToolType = 'pencil' | 'eraser' | 'pan'
-type DrawMode = 'pencil' | 'eraser' 
-
-type Point = {
-  x:number
-  y:number
-}
-
-type Stroke = {
-  id: string
-  mode: DrawMode
-  points: Point[]
-  color: string
-  width: number
-}
-
-type Viewport = {
-  x:number
-  y:number
-  scale:number
-}
+import type { Viewport, Stroke, ToolType, Point, DrawMode } from '~/types/whiteboard.type'
 
 const viewport = ref<Viewport>({
   x:0,
@@ -92,15 +122,23 @@ const strokes = ref<Stroke[]>([])
 const activeStroke = ref<Stroke | null >(null)
 const activeTool = ref<ToolType>('pencil')
 
-const penColor = '#e1df5b'
-const penWidth = 4
-const eraserWidth = 16
+const penColor = ref<string>('#e1df5b')
+const penWidth = ref<number>(4)
+const eraserWidth = ref<number>(16)
+const pencilColors = [
+  '#2563eb', // blue
+  '#dc2626', // red
+  '#16a34a', // green
+  '#ca8a04', // yellow
+  '#9333ea', // purple
+  '#ea580c', // orange
+]
 
 let resizeObserver: ResizeObserver | null = null
 let canvasContext: CanvasRenderingContext2D | null = null
 let activePointerId: number | null = null
 
-const isPanning = ref(false)
+const isPanning = ref<boolean>(false)
 let lastPanPoint: Point | null = null
 
 // 轉換成 Canvas 中的座標
@@ -215,8 +253,8 @@ const handlePointerDown = (event: PointerEvent)=>{
     id: crypto.randomUUID(),
     mode,
     points: [screenToWorld(getCanvasPoint(event))],
-    color: penColor,
-    width: mode === 'pencil' ? penWidth : eraserWidth
+    color: penColor.value,
+    width: mode === 'pencil' ? penWidth.value : eraserWidth.value
   }
 
   redraw()
@@ -355,5 +393,41 @@ onBeforeUnmount(()=>{
     rgba(244, 244, 245, 0.22) .5px,
     transparent 1px
   );
+}
+
+/* 根據容器寬度調整 */
+.canvas-container{
+  container-type: inline-size;
+  container-name: whiteboard;
+}
+
+.toolbar {
+  display: grid;
+  grid-template-columns: 3;
+}
+
+.toolbar-buttons{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.divide{
+  display: none;
+}
+
+@container whiteboard (min-width:720px) {
+  .divide{
+    display: block;
+    width: 0.5px;
+    height: 2rem;
+  }
+  .toolbar {  
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 }
 </style>
