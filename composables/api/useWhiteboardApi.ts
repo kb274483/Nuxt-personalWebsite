@@ -1,5 +1,5 @@
-import { error } from "three";
 import type { Stroke, WhiteboardElementRow } from "~/types/whiteboard.type";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 
 const TABLE_NAME = 'whiteboard_elements'
 
@@ -18,6 +18,7 @@ const computeStrokeBounds = (stroke:Stroke)=>{
 
 export const useWhiteboardApi = ()=>{
   const { $supabase } = useNuxtApp()
+  const toStroke = (row: WhiteboardElementRow) => row.payload
 
   const fetchStokes = async ()=>{
     const { data, error } = await $supabase
@@ -58,8 +59,37 @@ export const useWhiteboardApi = ()=>{
     }
   }
 
+  const subscribeToStrokes = (onInsert: (stroke:Stroke) => void)=>{
+    let channel: RealtimeChannel | null =null
+
+    channel = $supabase
+      .channel('whiteboard:strokes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: TABLE_NAME,
+          filter: 'type=eq.stroke',
+        },
+        payload => {
+          const row = payload.new as WhiteboardElementRow
+          onInsert(toStroke(row))
+        },
+      )
+      .subscribe()
+    
+    return ()=>{
+      if(channel){
+        void $supabase.removeChannel(channel)
+        channel = null
+      }
+    }
+  }
+
   return {
     fetchStokes,
-    saveStroke
+    saveStroke,
+    subscribeToStrokes
   }
 }

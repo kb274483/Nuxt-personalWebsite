@@ -74,7 +74,8 @@ let activePointerId: number | null = null
 const isPanning = ref<boolean>(false)
 let lastPanPoint: Point | null = null
 
-const { fetchStokes, saveStroke } = useWhiteboardApi()
+const { fetchStokes, saveStroke, subscribeToStrokes } = useWhiteboardApi()
+let unsubscribeStrokes: (() => void) | null = null
 
 // 轉換成 Canvas 中的座標
 const getCanvasPoint = (event:PointerEvent): Point =>{
@@ -298,8 +299,16 @@ const handleWheel = (event:WheelEvent)=>{
 
 onMounted( async ()=>{
   strokes.value = await fetchStokes()
-  resizeCanvas()
+  unsubscribeStrokes = subscribeToStrokes((stroke) => {
+    if (strokes.value.some(item => item.id === stroke.id)) {
+      return
+    }
 
+    strokes.value.push(stroke)
+    redraw()
+  })
+
+  resizeCanvas()
   if(canvasContainer.value){
     resizeObserver = new ResizeObserver(resizeCanvas)
     resizeObserver.observe(canvasContainer.value)
@@ -307,6 +316,8 @@ onMounted( async ()=>{
 })
 
 onBeforeUnmount(()=>{
+  unsubscribeStrokes?.()
+  unsubscribeStrokes = null
   resizeObserver?.disconnect()
   resizeObserver = null
 })
