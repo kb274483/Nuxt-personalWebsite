@@ -38,10 +38,10 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
 import WhiteboardToolBar from '../whiteboard/WhiteboardToolBar.vue';
+import { useWhiteboardApi } from '~/composables/api/useWhiteboardApi'
+import { onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
 import type { Viewport, Stroke, ToolType, Point, DrawMode } from '~/types/whiteboard.type'
-
 
 const viewport = ref<Viewport>({
   x:0,
@@ -73,6 +73,8 @@ let activePointerId: number | null = null
 
 const isPanning = ref<boolean>(false)
 let lastPanPoint: Point | null = null
+
+const { fetchStokes, saveStroke } = useWhiteboardApi()
 
 // 轉換成 Canvas 中的座標
 const getCanvasPoint = (event:PointerEvent): Point =>{
@@ -216,16 +218,27 @@ const handlePointerMove = (event: PointerEvent) => {
   redraw()
 }
 
-const commitActiveStroke = () => {
+const commitActiveStroke = async () => {
   if (!activeStroke.value) {
     return
   }
 
-  if (activeStroke.value.points.length > 1) {
-    strokes.value.push(activeStroke.value)
-  }
-
+  const stroke = activeStroke.value
   activeStroke.value = null
+
+  if (stroke.points.length > 1) {
+    strokes.value.push(stroke)
+    redraw()
+
+    try{
+      await saveStroke(stroke)
+    } catch (error){
+      strokes.value = strokes.value.filter(item => item.id !== stroke.id)
+      redraw()
+      console.log(error)
+    }
+    return
+  }
   redraw()
 }
 
@@ -283,7 +296,8 @@ const handleWheel = (event:WheelEvent)=>{
   zoomAt(sceenPoint, factor)
 }
 
-onMounted(()=>{
+onMounted( async ()=>{
+  strokes.value = await fetchStokes()
   resizeCanvas()
 
   if(canvasContainer.value){
