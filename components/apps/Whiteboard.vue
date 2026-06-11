@@ -10,7 +10,7 @@
     <canvas
       ref="canvasRef"
       class="absolute inset-0 z-10 block h-full w-full touch-none "
-      :class="{ activeTool === 'pan' ? 'cursor-grab' : 'cursor-crosshair' }"
+      :class="activeTool === 'pan' ? 'cursor-grab' : 'cursor-crosshair'"
       aria-label="Whiteboard"
       @contextmenu.prevent
       @wheel.prevent="handleWheel"
@@ -148,6 +148,8 @@ const drawStroke = (ctx:CanvasRenderingContext2D, stroke:Stroke) => {
   if (stroke.points.length < 2) return
 
   ctx.save()
+
+  ctx.globalCompositeOperation = stroke.mode === 'eraser' ? 'destination-out' : 'source-over'
   ctx.lineCap = 'round'
   ctx.lineJoin = 'round'
   ctx.strokeStyle = stroke.color
@@ -168,7 +170,6 @@ const redraw = ()=>{
   const canvas = canvasRef.value
   if(!canvas || !canvasContext) return
 
-  const canvasRect = canvas.getBoundingClientRect()
   canvasContext.save()
   canvasContext.setTransform(1, 0, 0, 1, 0, 0)
   canvasContext.clearRect(0,0,canvas.width, canvas.height)
@@ -198,22 +199,24 @@ const redraw = ()=>{
 const handlePointerDown = (event: PointerEvent)=>{
   const canvas = canvasRef.value
   if(!canvas || activePointerId !== null) return
-
+  
   activePointerId = event.pointerId
   canvas.setPointerCapture(event.pointerId)
 
-  if(event.button === 1 || event.button === 2){
+  const isPan = activeTool.value === 'pan' || event.button === 1 || event.button === 2
+  if(isPan){
     isPanning.value = true
     lastPanPoint = getCanvasPoint(event)
     return
   }
 
+  const mode:DrawMode = activeTool.value === 'eraser' ? 'eraser' : 'pencil'
   activeStroke.value = {
     id: crypto.randomUUID(),
-    mode: 'pencil',
+    mode,
     points: [screenToWorld(getCanvasPoint(event))],
     color: penColor,
-    width: penWidth
+    width: mode === 'pencil' ? penWidth : eraserWidth
   }
 
   redraw()
