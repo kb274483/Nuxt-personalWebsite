@@ -27,88 +27,21 @@
       @pointerleave="handlePointerCancel"
     />
 
-    <div class="absolute z-20 bottom-0 inset-x-0 flex justify-center "
-      aria-label="WhiteBoard Tool Bar"
-    >
-      <div class="toolbar pointer-events-auto bg-gray-900/10 dark:bg-slate-200/10 p-4 rounded-md gap-4">
-        <div class="toolbar-buttons">
-          <button
-            type="button"
-            aria-label="Pencil tool"
-            @click="activeTool = 'pencil'"
-            :class="getToolButtonClass('pencil')"
-          >
-            <Pencil class="h-8 w-8" />
-          </button>
-  
-          <button
-            type="button"
-            aria-label="Eraser tool"
-            @click="activeTool = 'eraser'"
-            :class="getToolButtonClass('eraser')"
-          >
-            <Eraser class="h-8 w-8" />
-          </button>
-  
-          <button
-            type="button"
-            aria-label="Pan tool"
-            @click="activeTool = 'pan'"
-            :class="getToolButtonClass('pan')"
-          >
-            <Hand class="h-8 w-8" />
-          </button>
-        </div>
-        
-        <div class="divide h-8 w-0.5 bg-black dark:bg-white divide" aria-hidden="true" />
-        
-        <div class="flex items-center gap-1" aria-label="Pen colors">
-          <button
-            v-for="color in pencilColors"
-            :key="color"
-            type="button"
-            class="h-8 w-8 border-2 border-black transition-none active:translate-x-[1px] active:translate-y-[1px] dark:border-white"
-            :class="penColor === color ? 'ring-2 ring-black ring-offset-2 dark:ring-white dark:ring-offset-zinc-900' : ''"
-            :style="{ backgroundColor: color }"
-            :aria-label="`Set pen color ${color}`"
-            @click="penColor = color"
-          />
-        </div>
-
-        <label class="flex items-center gap-2 text-xs font-black uppercase text-black dark:text-white">
-          <span>Pen</span>
-          <input
-            v-model.number="penWidth"
-            type="range"
-            min="2"
-            max="20"
-            step="1"
-            class="w-24 accent-[#FFD93D]"
-          >
-          <span class="w-6 text-right">{{ penWidth }}</span>
-        </label>
-
-        <label class="flex items-center gap-2 text-xs font-black uppercase text-black dark:text-white">
-          <span>Eraser</span>
-          <input
-            v-model.number="eraserWidth"
-            type="range"
-            min="8"
-            max="48"
-            step="1"
-            class="w-24 accent-[#FFD93D]"
-          >
-          <span class="w-6 text-right">{{ eraserWidth }}</span>
-        </label>
-      </div>
-    </div>
+    <WhiteboardToolBar 
+      v-model:active-tool="activeTool"
+      v-model:eraser-width="eraserWidth"
+      v-model:pen-color="penColor"
+      v-model:pen-width="penWidth"
+      :pen-colors="pencilColors"
+    />
   </section>
 </template>
 
 <script setup lang="ts">
-import { Eraser, Hand, Pencil } from 'lucide-vue-next'
 import { onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
+import WhiteboardToolBar from '../whiteboard/WhiteboardToolBar.vue';
 import type { Viewport, Stroke, ToolType, Point, DrawMode } from '~/types/whiteboard.type'
+
 
 const viewport = ref<Viewport>({
   x:0,
@@ -350,14 +283,6 @@ const handleWheel = (event:WheelEvent)=>{
   zoomAt(sceenPoint, factor)
 }
 
-const getToolButtonClass = (tool: ToolType) => {
-  const baseClass = 'flex h-10 w-10 items-center justify-center border-2 border-black transition-all ease-in active:translate-x-[1px] active:translate-y-[1px] dark:border-white'
-  const activeClass = 'bg-[#FFD93D] text-black shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff]'
-  const inactiveClass = 'bg-white text-black hover:bg-zinc-100 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700'
-
-  return `${baseClass} ${activeTool.value === tool ? activeClass : inactiveClass}`
-}
-
 onMounted(()=>{
   resizeCanvas()
 
@@ -399,35 +324,5 @@ onBeforeUnmount(()=>{
 .canvas-container{
   container-type: inline-size;
   container-name: whiteboard;
-}
-
-.toolbar {
-  display: grid;
-  grid-template-columns: 3;
-}
-
-.toolbar-buttons{
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.divide{
-  display: none;
-}
-
-@container whiteboard (min-width:720px) {
-  .divide{
-    display: block;
-    width: 0.5px;
-    height: 2rem;
-  }
-  .toolbar {  
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
 }
 </style>
