@@ -1,4 +1,4 @@
-import { Code, FileUser, Image, Plane, Settings, Mail } from 'lucide-vue-next'
+import { Code, FileUser, Image, Plane, Settings, Mail, PaintbrushVertical } from 'lucide-vue-next'
 import type { AppItem, AppItemPosition } from '~/types/appItem.type'
 
 type DesktopAppItem = AppItem & AppItemPosition
@@ -10,6 +10,7 @@ const DESKTOP_X = 10
 
 const MOBILE_POSITION_OVERRIDES: Record<string, Partial<AppItemPosition>> = {
   mail: { x: 110 , y: 50 },
+  whiteboard: { x: 110 , y: 150 },
 }
 
 const APP_DEFINITIONS = [
@@ -19,6 +20,7 @@ const APP_DEFINITIONS = [
   { id: 'settings', name: 'Settings', icon: Settings },
   { id: 'travel', name: 'Travel Path', icon: Plane },
   { id: 'mail', name: 'MailBox', icon: Mail },
+  { id: 'whiteboard', name: 'Whiteboard', icon: PaintbrushVertical}
 ] as const
 
 export const createDefaultDesktopApps = (isMobile = false): DesktopAppItem[] => 
@@ -32,4 +34,3 @@ export const createDefaultDesktopApps = (isMobile = false): DesktopAppItem[] =>
     zIndex: 1,
     ...(isMobile ? MOBILE_POSITION_OVERRIDES[app.id] : undefined),
   }))
-
