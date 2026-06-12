@@ -79,6 +79,45 @@ let realtimeWhiteboard: ReturnType<typeof subscribeWhiteboard> | null = null
 const clientId = crypto.randomUUID()
 const previewStrokes = new Map<string,Stroke>()
 
+// Supabase 即時廣播節流
+const BROADCAST_DEBOUNCE_MS = 40
+let lastBroadcastAt = 0
+let pendingBroadcastTimer: number| null = null
+
+const broadcastStroke = ( force = false)=>{
+  if( !activeStroke.value ) return
+
+  const now = Date.now()
+  const elapsed = now - lastBroadcastAt
+
+  const send = () => {
+    if( !activeStroke.value ) return
+    lastBroadcastAt = Date.now()
+
+    realtimeWhiteboard?.broadcastStrokeProgress({
+      clientId,
+      stroke: activeStroke.value,
+    })
+  }
+
+  // 強制更新或是已超過節流時間時
+  if( force || elapsed >= BROADCAST_DEBOUNCE_MS){
+    if(pendingBroadcastTimer){
+      window.clearTimeout(pendingBroadcastTimer)
+      pendingBroadcastTimer = null
+    }
+    send()
+    return
+  }
+
+  if (!pendingBroadcastTimer) {
+    pendingBroadcastTimer = window.setTimeout(() => {
+      pendingBroadcastTimer = null
+      send()
+    }, BROADCAST_DEBOUNCE_MS - elapsed)
+  }
+}
+
 // 轉換成 Canvas 中的座標
 const getCanvasPoint = (event:PointerEvent): Point =>{
   const canvas = canvasRef.value
@@ -222,10 +261,7 @@ const handlePointerMove = (event: PointerEvent) => {
   if(!activeStroke.value) return
   activeStroke.value.points.push(screenToWorld(getCanvasPoint(event)))
 
-  realtimeWhiteboard?.broadcastStrokeProgress({
-    clientId,
-    stroke: activeStroke.value
-  })
+  broadcastStroke()
   redraw()
 }
 
@@ -234,6 +270,7 @@ const commitActiveStroke = async () => {
     return
   }
 
+  broadcastStroke(true)
   const stroke = activeStroke.value
   activeStroke.value = null
 
@@ -277,6 +314,12 @@ const handlePointerCancel = (event: PointerEvent) => {
       strokeId,
     })
   }
+
+  if (pendingBroadcastTimer) {
+    window.clearTimeout(pendingBroadcastTimer)
+    pendingBroadcastTimer = null
+  }
+
   isPanning.value = false
   lastPanPoint = null
   canvasRef.value?.releasePointerCapture(event.pointerId)
@@ -353,6 +396,10 @@ onMounted( async ()=>{
 })
 
 onBeforeUnmount(()=>{
+  if (pendingBroadcastTimer) {
+    window.clearTimeout(pendingBroadcastTimer)
+    pendingBroadcastTimer = null
+  }
   realtimeWhiteboard?.unsubscribe()
   realtimeWhiteboard = null
   resizeObserver?.disconnect()
