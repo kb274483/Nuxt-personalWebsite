@@ -1,8 +1,18 @@
-import type { Stroke, WhiteboardElementRow } from "~/types/whiteboard.type";
+import type { 
+  Stroke, 
+  WhiteboardElementRow, 
+  StrokeCancelPayload, 
+  StrokeProgressPayload 
+} from "~/types/whiteboard.type";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
-const TABLE_NAME = 'whiteboard_elements'
+type SubscribeHandles = {
+  onInsert: (stroke:Stroke) => void
+  onStrokeProgress: (payload:StrokeProgressPayload) => void
+  onStrokeCancel: (payload:StrokeCancelPayload) => void
+}
 
+const TABLE_NAME = 'whiteboard_elements'
 const computeStrokeBounds = (stroke:Stroke)=>{
   const xArr = stroke.points.map(point => point.x)
   const yArr = stroke.points.map(point => point.y)
@@ -59,11 +69,11 @@ export const useWhiteboardApi = ()=>{
     }
   }
 
-  const subscribeToStrokes = (onInsert: (stroke:Stroke) => void)=>{
+  const subscribeWhiteboard = (handler: SubscribeHandles)=>{
     let channel: RealtimeChannel | null =null
 
     channel = $supabase
-      .channel('whiteboard:strokes')
+      .channel('whiteboard:main')
       .on(
         'postgres_changes',
         {
@@ -74,22 +84,41 @@ export const useWhiteboardApi = ()=>{
         },
         payload => {
           const row = payload.new as WhiteboardElementRow
-          onInsert(toStroke(row))
+          handler.onInsert(toStroke(row))
         },
       )
+      .on('broadcast', { event: 'stroke-progress' }, payload => {
+        handler.onStrokeProgress(payload.payload as StrokeProgressPayload)
+      })
+      .on('broadcast', { event: 'stroke-cancel' }, payload => {
+        handler.onStrokeCancel(payload.payload as StrokeCancelPayload)
+      })
       .subscribe()
     
-    return ()=>{
-      if(channel){
+    return {
+      unsubscribe: () => {
         void $supabase.removeChannel(channel)
-        channel = null
-      }
+      },
+      broadcastStrokeProgress: (payload: StrokeProgressPayload) => {
+        void channel.send({
+          type: 'broadcast',
+          event: 'stroke-progress',
+          payload,
+        })
+      },
+      broadcastStrokeCancel: (payload: StrokeCancelPayload) => {
+        void channel.send({
+          type: 'broadcast',
+          event: 'stroke-cancel',
+          payload,
+        })
+      },
     }
   }
 
   return {
     fetchStokes,
     saveStroke,
-    subscribeToStrokes
+    subscribeWhiteboard
   }
 }

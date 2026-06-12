@@ -31,3 +31,14 @@ export type WhiteboardElementRow = {
   max_y: number
   created_at: string
 }
+
+// 即時顯示正在繪製的筆畫
+export type StrokeProgressPayload = {
+  clientId: string
+  stroke: Stroke
+}
+
+export type StrokeCancelPayload = {
+  clientId: string
+  strokeId: string
+}

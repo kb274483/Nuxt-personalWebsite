@@ -74,8 +74,10 @@ let activePointerId: number | null = null
 const isPanning = ref<boolean>(false)
 let lastPanPoint: Point | null = null
 
-const { fetchStokes, saveStroke, subscribeToStrokes } = useWhiteboardApi()
-let unsubscribeStrokes: (() => void) | null = null
+const { fetchStokes, saveStroke, subscribeWhiteboard } = useWhiteboardApi()
+let realtimeWhiteboard: ReturnType<typeof subscribeWhiteboard> | null = null
+const clientId = crypto.randomUUID()
+const previewStrokes = new Map<string,Stroke>()
 
 // 轉換成 Canvas 中的座標
 const getCanvasPoint = (event:PointerEvent): Point =>{
@@ -162,6 +164,9 @@ const redraw = ()=>{
   for(const stroke of strokes.value){
     drawStroke(canvasContext, stroke)
   }
+  for(const stroke of previewStrokes.values()){
+    drawStroke(canvasContext, stroke)
+  }
 
   if(activeStroke.value) {
     drawStroke(canvasContext, activeStroke.value)
@@ -216,6 +221,11 @@ const handlePointerMove = (event: PointerEvent) => {
 
   if(!activeStroke.value) return
   activeStroke.value.points.push(screenToWorld(getCanvasPoint(event)))
+
+  realtimeWhiteboard?.broadcastStrokeProgress({
+    clientId,
+    stroke: activeStroke.value
+  })
   redraw()
 }
 
@@ -260,6 +270,13 @@ const handlePointerCancel = (event: PointerEvent) => {
     return
   }
 
+  const strokeId = activeStroke.value?.id
+  if(strokeId){
+    realtimeWhiteboard?.broadcastStrokeCancel({
+      clientId,
+      strokeId,
+    })
+  }
   isPanning.value = false
   lastPanPoint = null
   canvasRef.value?.releasePointerCapture(event.pointerId)
@@ -297,17 +314,37 @@ const handleWheel = (event:WheelEvent)=>{
   zoomAt(sceenPoint, factor)
 }
 
+const initSubscribeWhiteboard = ()=>{
+  realtimeWhiteboard = subscribeWhiteboard({
+    onInsert:(stroke)=>{
+      if(strokes.value.some(item => item.id === stroke.id)){
+        previewStrokes.delete(stroke.id)
+        redraw()
+        return
+      }
+
+      previewStrokes.delete(stroke.id)
+      strokes.value.push(stroke)
+      redraw()
+    },
+    onStrokeProgress: ({ stroke }) => {
+      if (strokes.value.some(item => item.id === stroke.id)) {
+        return
+      }
+
+      previewStrokes.set(stroke.id, stroke)
+      redraw()
+    },
+    onStrokeCancel: ({ strokeId }) => {
+      previewStrokes.delete(strokeId)
+      redraw()
+    },
+  })
+}
+
 onMounted( async ()=>{
   strokes.value = await fetchStokes()
-  unsubscribeStrokes = subscribeToStrokes((stroke) => {
-    if (strokes.value.some(item => item.id === stroke.id)) {
-      return
-    }
-
-    strokes.value.push(stroke)
-    redraw()
-  })
-
+  initSubscribeWhiteboard()
   resizeCanvas()
   if(canvasContainer.value){
     resizeObserver = new ResizeObserver(resizeCanvas)
@@ -316,8 +353,8 @@ onMounted( async ()=>{
 })
 
 onBeforeUnmount(()=>{
-  unsubscribeStrokes?.()
-  unsubscribeStrokes = null
+  realtimeWhiteboard?.unsubscribe()
+  realtimeWhiteboard = null
   resizeObserver?.disconnect()
   resizeObserver = null
 })
