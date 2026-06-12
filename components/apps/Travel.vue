@@ -9,7 +9,7 @@
     </div>
 
     <Transition name="bubble">
-      <div @click="()=>{console.log(places[activeIndex])}"
+      <div @click="()=>{console.log(travelFootprints[activeIndex])}"
         v-if="currentPhoto && showPhotoBubble" 
         class="absolute top-2 left-2 z-40 md:top-20 md:left-20"
       >
@@ -23,10 +23,10 @@
           </div>
           <div class="mt-2 px-1 flex justify-between items-center">
             <span class="text-xs font-bold text-white shadow-black drop-shadow-xl/50">
-              {{ places[activeIndex]!.name }}
+              {{ travelFootprints[activeIndex]!.name }}
             </span>
             <span class="text-[10px] text-white shadow-black drop-shadow-xl/50">
-              {{ places[activeIndex]!.date }}
+              {{ travelFootprints[activeIndex]!.date }}
             </span>
           </div>
         </div>
@@ -58,7 +58,7 @@
         @wheel="handleWheel"
       >
         <div 
-          v-for="(place, index) in places" 
+          v-for="(place, index) in travelFootprints" 
           :key="place.name"
 					:id="place.name"
           @click="flyTo(index)"
@@ -89,7 +89,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import starryImg from '@/public/starry.avif'
-import { places } from '~/types/place.type' // 旅行紀錄-地點資料
+import { travelFootprints } from '~/data/travelFootprints' // 旅行紀錄-地點資料
 import type { Place } from '~/types/place.type'
 import { usePhotoManager } from '~/stores/photoManager'
 import { delay } from '~/utils/common'
@@ -125,9 +125,9 @@ const flyTo = async (index: number) => {
   isTransitioning.value = true
   
   activeIndex.value = index
-  const place = places[index]
-  const currentPlace = places[activeIndex.value]
-  const prevPlace = prevIndex.value !== null ? places[prevIndex.value] : null
+  const place = travelFootprints[index]
+  const currentPlace = travelFootprints[activeIndex.value]
+  const prevPlace = prevIndex.value !== null ? travelFootprints[prevIndex.value] : null
   prevIndex.value = activeIndex.value
   
   // 隱藏舊照片
@@ -197,14 +197,14 @@ const handleWheel = (e: WheelEvent) => {
   if (wheelTimeout) clearTimeout(wheelTimeout)
   
   wheelTimeout = setTimeout(() => {
-    if (e.deltaY > 0 && activeIndex.value < places.length - 1) {
-			const nextPlace = document.getElementById(places[activeIndex.value + 1]!.name)
+    if (e.deltaY > 0 && activeIndex.value < travelFootprints.length - 1) {
+			const nextPlace = document.getElementById(travelFootprints[activeIndex.value + 1]!.name)
 			if (nextPlace) {
 				nextPlace.scrollIntoView({ behavior: 'smooth' })
 			}
       flyTo(activeIndex.value + 1)
     } else if (e.deltaY < 0 && activeIndex.value > 0) {
-			const prevPlace = document.getElementById(places[activeIndex.value - 1]!.name)
+			const prevPlace = document.getElementById(travelFootprints[activeIndex.value - 1]!.name)
 			if (prevPlace) {
 				prevPlace.scrollIntoView({ behavior: 'smooth' })
 			}
@@ -245,7 +245,7 @@ onMounted(async () => {
         .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
         .width(containerWidth)
         .height(containerHeight)
-        .htmlElementsData([places[0]])
+        .htmlElementsData([travelFootprints[0]])
 				.htmlLat((d: any) => d.lat)
 				.htmlLng((d: any) => d.lng)
 				.htmlElement((d: any) => {
