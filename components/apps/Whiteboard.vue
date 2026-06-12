@@ -55,10 +55,12 @@ const strokes = ref<Stroke[]>([])
 const activeStroke = ref<Stroke | null >(null)
 const activeTool = ref<ToolType>('pencil')
 
-const penColor = ref<string>('#e1df5b')
-const penWidth = ref<number>(4)
-const eraserWidth = ref<number>(16)
+const penColor = ref<string>('#c1c1c1')
+const penWidth = ref<number>(12)
+const eraserWidth = ref<number>(20)
 const pencilColors = [
+  '#c1c1c1',
+  '#333333',
   '#2563eb', // blue
   '#dc2626', // red
   '#16a34a', // green
@@ -357,6 +359,30 @@ const handleWheel = (event:WheelEvent)=>{
   zoomAt(sceenPoint, factor)
 }
 
+// 即時廣播斷線時的處理
+const mergeStrokes = (updateStrokes: Stroke[]) => {
+  const existStrokeId = new Set(strokes.value.map(value => value.id))
+  const newStrokes = updateStrokes.filter(value => !existStrokeId.has(value.id))
+
+  if( newStrokes.length === 0) return
+
+  for(const stroke of newStrokes){
+    previewStrokes.delete(stroke.id)
+  }
+
+  strokes.value.push(...newStrokes)
+  redraw()
+}
+
+const refreshStrokes = async () => {
+  try{
+    const lastestStrokes = await fetchStokes()
+    mergeStrokes(lastestStrokes)
+  }catch(err){
+    console.log(err,"failed to fetch stroke")
+  }
+}
+
 const initSubscribeWhiteboard = ()=>{
   realtimeWhiteboard = subscribeWhiteboard({
     onInsert:(stroke)=>{
@@ -382,11 +408,14 @@ const initSubscribeWhiteboard = ()=>{
       previewStrokes.delete(strokeId)
       redraw()
     },
+    onSubscribed: () => {
+      void refreshStrokes()
+    },
   })
 }
 
 onMounted( async ()=>{
-  strokes.value = await fetchStokes()
+  await refreshStrokes()
   initSubscribeWhiteboard()
   resizeCanvas()
   if(canvasContainer.value){

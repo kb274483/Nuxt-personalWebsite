@@ -10,6 +10,7 @@ type SubscribeHandles = {
   onInsert: (stroke:Stroke) => void
   onStrokeProgress: (payload:StrokeProgressPayload) => void
   onStrokeCancel: (payload:StrokeCancelPayload) => void
+  onSubscribed?: () => void
 }
 
 const TABLE_NAME = 'whiteboard_elements'
@@ -93,7 +94,9 @@ export const useWhiteboardApi = ()=>{
       .on('broadcast', { event: 'stroke-cancel' }, payload => {
         handler.onStrokeCancel(payload.payload as StrokeCancelPayload)
       })
-      .subscribe()
+      .subscribe((status)=>{
+        if(status === 'SUBSCRIBED') handler.onSubscribed?.()
+      })
     
     return {
       unsubscribe: () => {
