@@ -1,3 +1,246 @@
+<template>
+  <section class="flex h-full min-h-0 flex-col bg-white text-gray-900 dark:bg-zinc-950 dark:text-gray-100">
+    <header class="flex h-11 shrink-0 items-center justify-between border-b-2 border-black bg-gray-100 px-4 dark:border-white dark:bg-zinc-900">
+      <h2 class="text-sm font-black uppercase tracking-wide text-gray-900 dark:text-gray-100">
+        New Message
+      </h2>
+      <p
+        class="text-xs font-bold"
+        :class="{
+          'text-gray-500 dark:text-gray-400': status === 'idle',
+          'text-blue-600 dark:text-blue-300': status === 'sending',
+          'text-green-600 dark:text-green-300': status === 'sent',
+          'text-red-600 dark:text-red-300': status === 'error',
+        }"
+        aria-live="polite"
+      >
+        {{ status === 'sending' ? 'Sending...' : status === 'sent' ? 'Sent' : status === 'error' ? 'Needs attention' : 'Draft' }}
+      </p>
+    </header>
+
+    <div class="flex shrink-0 items-center gap-3 border-b border-gray-200 px-4 py-2 text-sm dark:border-zinc-800">
+      <span class="w-14 shrink-0 text-gray-500 dark:text-gray-400">To</span>
+      <span class="font-semibold text-gray-800 dark:text-gray-100">Roy</span>
+      <span class="rounded border border-gray-300 px-2 py-0.5 text-xs font-bold uppercase text-gray-500 dark:border-zinc-700 dark:text-gray-400">
+        Locked
+      </span>
+    </div>
+
+    <label class="flex shrink-0 items-center gap-3 border-b border-gray-200 px-4 py-2 text-sm dark:border-zinc-800">
+      <span class="w-14 shrink-0 text-gray-500 dark:text-gray-400">From</span>
+      <input
+        v-model.trim="senderEmail"
+        :disabled="isSending"
+        class="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-gray-400 disabled:opacity-60"
+        type="email"
+        autocomplete="email"
+        placeholder="your@email.com"
+        @input="clearMessages"
+      >
+    </label>
+
+    <label class="flex shrink-0 items-center gap-3 border-b border-gray-200 px-4 py-2 text-sm dark:border-zinc-800">
+      <span class="w-14 shrink-0 text-gray-500 dark:text-gray-400">Subject</span>
+      <input
+        v-model.trim="subject"
+        :disabled="isSending"
+        :maxlength="CONTACT_MAIL_LIMITS.maxSubjectLength"
+        class="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-gray-400 disabled:opacity-60"
+        type="text"
+        placeholder="Subject"
+        @input="clearMessages"
+      >
+    </label>
+
+    <div class="min-h-0 flex-1 overflow-auto px-4 py-3">
+      <EditorContent
+        v-if="editor"
+        :editor="editor"
+        class="mail-editor min-h-full"
+      />
+      <div
+        v-else
+        class="flex h-full items-center justify-center text-sm font-bold text-gray-400"
+      >
+        Loading editor...
+      </div>
+    </div>
+
+    <div
+      v-if="attachments.length > 0 || inlineImages.length > 0"
+      class="shrink-0 border-t border-gray-200 px-4 py-2 dark:border-zinc-800"
+    >
+      <div class="mb-2 flex items-center justify-between text-xs font-bold uppercase text-gray-500 dark:text-gray-400">
+        <span>Files</span>
+        <span>{{ totalUploadLabel }} / {{ formatFileSize(CONTACT_MAIL_LIMITS.maxTotalBytes) }}</span>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <div
+          v-for="(file, index) in attachments"
+          :key="`${file.name}-${file.size}-${index}`"
+          class="flex max-w-full items-center gap-2 border-2 border-black bg-gray-50 px-2 py-1 text-xs font-bold text-gray-800 shadow-[2px_2px_0px_#000] dark:border-white dark:bg-zinc-900 dark:text-gray-100 dark:shadow-[2px_2px_0px_#fff]"
+        >
+          <Paperclip class="h-3.5 w-3.5 shrink-0" />
+          <span class="max-w-40 truncate">{{ file.name }}</span>
+          <span class="shrink-0 text-gray-500">{{ formatFileSize(file.size) }}</span>
+          <button
+            type="button"
+            class="shrink-0 p-0.5 hover:bg-red-100 dark:hover:bg-red-950"
+            :disabled="isSending"
+            :aria-label="`Remove ${file.name}`"
+            @click="removeAttachment(index)"
+          >
+            <X class="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        <div
+          v-for="image in inlineImages"
+          :key="image.id"
+          class="flex max-w-full items-center gap-2 border-2 border-black bg-blue-50 px-2 py-1 text-xs font-bold text-gray-800 shadow-[2px_2px_0px_#000] dark:border-white dark:bg-blue-950/40 dark:text-gray-100 dark:shadow-[2px_2px_0px_#fff]"
+        >
+          <img
+            :src="image.objectUrl"
+            :alt="image.file.name"
+            class="h-7 w-7 shrink-0 border border-black object-cover dark:border-white"
+          >
+          <span class="max-w-40 truncate">{{ image.file.name }}</span>
+          <span class="shrink-0 text-gray-500">{{ formatFileSize(image.file.size) }}</span>
+          <button
+            type="button"
+            class="shrink-0 p-0.5 hover:bg-red-100 dark:hover:bg-red-950"
+            :disabled="isSending"
+            :aria-label="`Remove inline image ${image.file.name}`"
+            @click="removeInlineImage(image.id)"
+          >
+            <X class="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <footer class="shrink-0 border-t-2 border-black bg-gray-50 p-3 dark:border-white dark:bg-zinc-900">
+      <div class="mb-3 flex gap-1 overflow-x-auto rounded border-2 border-black bg-white p-1 dark:border-white dark:bg-zinc-950">
+        <button type="button" class="mail-tool-button" :disabled="isSending" aria-label="Undo" @click="runEditorCommand(() => editor?.chain().focus().undo().run())">
+          <Undo2 class="h-4 w-4" />
+        </button>
+        <button type="button" class="mail-tool-button" :disabled="isSending" aria-label="Redo" @click="runEditorCommand(() => editor?.chain().focus().redo().run())">
+          <Redo2 class="h-4 w-4" />
+        </button>
+
+        <div class="mx-1 h-8 w-px shrink-0 bg-gray-200 dark:bg-zinc-700" />
+
+        <label class="mail-select-label" aria-label="Font size">
+          <Type class="h-4 w-4" />
+          <select
+            v-model="selectedFontSize"
+            :disabled="isSending"
+            class="bg-transparent text-xs font-bold outline-none"
+            @change="applyFontSize"
+          >
+            <option value="13px">Small</option>
+            <option value="16px">Normal</option>
+            <option value="20px">Large</option>
+            <option value="26px">Huge</option>
+          </select>
+        </label>
+
+        <button type="button" class="mail-tool-button" :class="{ 'mail-tool-button-active': toolbarState.bold }" :disabled="isSending" aria-label="Bold" @click="runEditorCommand(() => editor?.chain().focus().toggleBold().run())">
+          <Bold class="h-4 w-4" />
+        </button>
+        <button type="button" class="mail-tool-button" :class="{ 'mail-tool-button-active': toolbarState.italic }" :disabled="isSending" aria-label="Italic" @click="runEditorCommand(() => editor?.chain().focus().toggleItalic().run())">
+          <Italic class="h-4 w-4" />
+        </button>
+        <button type="button" class="mail-tool-button" :class="{ 'mail-tool-button-active': toolbarState.underline }" :disabled="isSending" aria-label="Underline" @click="runEditorCommand(() => editor?.chain().focus().toggleUnderline().run())">
+          <Underline class="h-4 w-4" />
+        </button>
+
+        <label class="mail-color-button" aria-label="Text color">
+          <span class="h-4 w-4 border border-black dark:border-white" :style="{ backgroundColor: selectedColor }" />
+          <input
+            v-model="selectedColor"
+            :disabled="isSending"
+            class="sr-only"
+            type="color"
+            @input="applyColor"
+          >
+        </label>
+
+        <div class="mx-1 h-8 w-px shrink-0 bg-gray-200 dark:bg-zinc-700" />
+
+        <button type="button" class="mail-tool-button" :class="{ 'mail-tool-button-active': toolbarState.alignLeft }" :disabled="isSending" aria-label="Align left" @click="runEditorCommand(() => editor?.chain().focus().setTextAlign('left').run())">
+          <AlignLeft class="h-4 w-4" />
+        </button>
+        <button type="button" class="mail-tool-button" :class="{ 'mail-tool-button-active': toolbarState.alignCenter }" :disabled="isSending" aria-label="Align center" @click="runEditorCommand(() => editor?.chain().focus().setTextAlign('center').run())">
+          <AlignCenter class="h-4 w-4" />
+        </button>
+        <button type="button" class="mail-tool-button" :class="{ 'mail-tool-button-active': toolbarState.alignRight }" :disabled="isSending" aria-label="Align right" @click="runEditorCommand(() => editor?.chain().focus().setTextAlign('right').run())">
+          <AlignRight class="h-4 w-4" />
+        </button>
+        <button type="button" class="mail-tool-button" :class="{ 'mail-tool-button-active': toolbarState.bulletList }" :disabled="isSending" aria-label="Bullet list" @click="runEditorCommand(() => editor?.chain().focus().toggleBulletList().run())">
+          <List class="h-4 w-4" />
+        </button>
+        <button type="button" class="mail-tool-button" :class="{ 'mail-tool-button-active': toolbarState.orderedList }" :disabled="isSending" aria-label="Numbered list" @click="runEditorCommand(() => editor?.chain().focus().toggleOrderedList().run())">
+          <ListOrdered class="h-4 w-4" />
+        </button>
+
+        <div class="mx-1 h-8 w-px shrink-0 bg-gray-200 dark:bg-zinc-700" />
+
+        <button type="button" class="mail-tool-button" :disabled="isSending" aria-label="Attach file" @click="openAttachmentPicker">
+          <Paperclip class="h-4 w-4" />
+        </button>
+        <button type="button" class="mail-tool-button" :disabled="isSending" aria-label="Insert image" @click="openInlineImagePicker">
+          <ImageIcon class="h-4 w-4" />
+        </button>
+      </div>
+
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p class="min-h-5 text-sm font-bold" :class="errorMessage ? 'text-red-600 dark:text-red-300' : 'text-green-600 dark:text-green-300'" aria-live="polite">
+          {{ errorMessage || successMessage }}
+        </p>
+
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            class="flex h-10 items-center gap-2 border-2 border-black bg-red-100 px-3 text-sm font-black uppercase text-black shadow-[3px_3px_0px_#000] transition active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-white dark:bg-red-950 dark:text-white dark:shadow-[3px_3px_0px_#fff]"
+            :disabled="isSending"
+            aria-label="Discard draft"
+            @click="resetForm"
+          >
+            <Trash2 class="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            class="flex h-10 items-center gap-2 border-2 border-black bg-blue-600 px-4 text-sm font-black uppercase text-white shadow-[3px_3px_0px_#000] transition hover:bg-blue-700 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-white dark:shadow-[3px_3px_0px_#fff]"
+            :disabled="!canSend"
+            @click="sendMail"
+          >
+            <Send class="h-4 w-4" />
+            Send
+          </button>
+        </div>
+      </div>
+    </footer>
+
+    <input
+      ref="attachmentInput"
+      class="hidden"
+      type="file"
+      multiple
+      :accept="Array.from(ALLOWED_ATTACHMENT_TYPES).join(',')"
+      @change="handleAttachmentChange"
+    >
+    <input
+      ref="inlineImageInput"
+      class="hidden"
+      type="file"
+      multiple
+      :accept="Array.from(ALLOWED_INLINE_IMAGE_TYPES).join(',')"
+      @change="handleInlineImageChange"
+    >
+  </section>
+</template>
+
 <script setup lang="ts">
 import StarterKit from '@tiptap/starter-kit'
 import { Editor, EditorContent } from '@tiptap/vue-3'
@@ -386,249 +629,6 @@ onBeforeUnmount(() => {
   editor.value?.destroy()
 })
 </script>
-
-<template>
-  <section class="flex h-full min-h-0 flex-col bg-white text-gray-900 dark:bg-zinc-950 dark:text-gray-100">
-    <header class="flex h-11 shrink-0 items-center justify-between border-b-2 border-black bg-gray-100 px-4 dark:border-white dark:bg-zinc-900">
-      <h2 class="text-sm font-black uppercase tracking-wide text-gray-900 dark:text-gray-100">
-        New Message
-      </h2>
-      <p
-        class="text-xs font-bold"
-        :class="{
-          'text-gray-500 dark:text-gray-400': status === 'idle',
-          'text-blue-600 dark:text-blue-300': status === 'sending',
-          'text-green-600 dark:text-green-300': status === 'sent',
-          'text-red-600 dark:text-red-300': status === 'error',
-        }"
-        aria-live="polite"
-      >
-        {{ status === 'sending' ? 'Sending...' : status === 'sent' ? 'Sent' : status === 'error' ? 'Needs attention' : 'Draft' }}
-      </p>
-    </header>
-
-    <div class="flex shrink-0 items-center gap-3 border-b border-gray-200 px-4 py-2 text-sm dark:border-zinc-800">
-      <span class="w-14 shrink-0 text-gray-500 dark:text-gray-400">To</span>
-      <span class="font-semibold text-gray-800 dark:text-gray-100">Roy</span>
-      <span class="rounded border border-gray-300 px-2 py-0.5 text-xs font-bold uppercase text-gray-500 dark:border-zinc-700 dark:text-gray-400">
-        Locked
-      </span>
-    </div>
-
-    <label class="flex shrink-0 items-center gap-3 border-b border-gray-200 px-4 py-2 text-sm dark:border-zinc-800">
-      <span class="w-14 shrink-0 text-gray-500 dark:text-gray-400">From</span>
-      <input
-        v-model.trim="senderEmail"
-        :disabled="isSending"
-        class="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-gray-400 disabled:opacity-60"
-        type="email"
-        autocomplete="email"
-        placeholder="your@email.com"
-        @input="clearMessages"
-      >
-    </label>
-
-    <label class="flex shrink-0 items-center gap-3 border-b border-gray-200 px-4 py-2 text-sm dark:border-zinc-800">
-      <span class="w-14 shrink-0 text-gray-500 dark:text-gray-400">Subject</span>
-      <input
-        v-model.trim="subject"
-        :disabled="isSending"
-        :maxlength="CONTACT_MAIL_LIMITS.maxSubjectLength"
-        class="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-gray-400 disabled:opacity-60"
-        type="text"
-        placeholder="Subject"
-        @input="clearMessages"
-      >
-    </label>
-
-    <div class="min-h-0 flex-1 overflow-auto px-4 py-3">
-      <EditorContent
-        v-if="editor"
-        :editor="editor"
-        class="mail-editor min-h-full"
-      />
-      <div
-        v-else
-        class="flex h-full items-center justify-center text-sm font-bold text-gray-400"
-      >
-        Loading editor...
-      </div>
-    </div>
-
-    <div
-      v-if="attachments.length > 0 || inlineImages.length > 0"
-      class="shrink-0 border-t border-gray-200 px-4 py-2 dark:border-zinc-800"
-    >
-      <div class="mb-2 flex items-center justify-between text-xs font-bold uppercase text-gray-500 dark:text-gray-400">
-        <span>Files</span>
-        <span>{{ totalUploadLabel }} / {{ formatFileSize(CONTACT_MAIL_LIMITS.maxTotalBytes) }}</span>
-      </div>
-      <div class="flex flex-wrap gap-2">
-        <div
-          v-for="(file, index) in attachments"
-          :key="`${file.name}-${file.size}-${index}`"
-          class="flex max-w-full items-center gap-2 border-2 border-black bg-gray-50 px-2 py-1 text-xs font-bold text-gray-800 shadow-[2px_2px_0px_#000] dark:border-white dark:bg-zinc-900 dark:text-gray-100 dark:shadow-[2px_2px_0px_#fff]"
-        >
-          <Paperclip class="h-3.5 w-3.5 shrink-0" />
-          <span class="max-w-40 truncate">{{ file.name }}</span>
-          <span class="shrink-0 text-gray-500">{{ formatFileSize(file.size) }}</span>
-          <button
-            type="button"
-            class="shrink-0 p-0.5 hover:bg-red-100 dark:hover:bg-red-950"
-            :disabled="isSending"
-            :aria-label="`Remove ${file.name}`"
-            @click="removeAttachment(index)"
-          >
-            <X class="h-3.5 w-3.5" />
-          </button>
-        </div>
-
-        <div
-          v-for="image in inlineImages"
-          :key="image.id"
-          class="flex max-w-full items-center gap-2 border-2 border-black bg-blue-50 px-2 py-1 text-xs font-bold text-gray-800 shadow-[2px_2px_0px_#000] dark:border-white dark:bg-blue-950/40 dark:text-gray-100 dark:shadow-[2px_2px_0px_#fff]"
-        >
-          <img
-            :src="image.objectUrl"
-            :alt="image.file.name"
-            class="h-7 w-7 shrink-0 border border-black object-cover dark:border-white"
-          >
-          <span class="max-w-40 truncate">{{ image.file.name }}</span>
-          <span class="shrink-0 text-gray-500">{{ formatFileSize(image.file.size) }}</span>
-          <button
-            type="button"
-            class="shrink-0 p-0.5 hover:bg-red-100 dark:hover:bg-red-950"
-            :disabled="isSending"
-            :aria-label="`Remove inline image ${image.file.name}`"
-            @click="removeInlineImage(image.id)"
-          >
-            <X class="h-3.5 w-3.5" />
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <footer class="shrink-0 border-t-2 border-black bg-gray-50 p-3 dark:border-white dark:bg-zinc-900">
-      <div class="mb-3 flex gap-1 overflow-x-auto rounded border-2 border-black bg-white p-1 dark:border-white dark:bg-zinc-950">
-        <button type="button" class="mail-tool-button" :disabled="isSending" aria-label="Undo" @click="runEditorCommand(() => editor?.chain().focus().undo().run())">
-          <Undo2 class="h-4 w-4" />
-        </button>
-        <button type="button" class="mail-tool-button" :disabled="isSending" aria-label="Redo" @click="runEditorCommand(() => editor?.chain().focus().redo().run())">
-          <Redo2 class="h-4 w-4" />
-        </button>
-
-        <div class="mx-1 h-8 w-px shrink-0 bg-gray-200 dark:bg-zinc-700" />
-
-        <label class="mail-select-label" aria-label="Font size">
-          <Type class="h-4 w-4" />
-          <select
-            v-model="selectedFontSize"
-            :disabled="isSending"
-            class="bg-transparent text-xs font-bold outline-none"
-            @change="applyFontSize"
-          >
-            <option value="13px">Small</option>
-            <option value="16px">Normal</option>
-            <option value="20px">Large</option>
-            <option value="26px">Huge</option>
-          </select>
-        </label>
-
-        <button type="button" class="mail-tool-button" :class="{ 'mail-tool-button-active': toolbarState.bold }" :disabled="isSending" aria-label="Bold" @click="runEditorCommand(() => editor?.chain().focus().toggleBold().run())">
-          <Bold class="h-4 w-4" />
-        </button>
-        <button type="button" class="mail-tool-button" :class="{ 'mail-tool-button-active': toolbarState.italic }" :disabled="isSending" aria-label="Italic" @click="runEditorCommand(() => editor?.chain().focus().toggleItalic().run())">
-          <Italic class="h-4 w-4" />
-        </button>
-        <button type="button" class="mail-tool-button" :class="{ 'mail-tool-button-active': toolbarState.underline }" :disabled="isSending" aria-label="Underline" @click="runEditorCommand(() => editor?.chain().focus().toggleUnderline().run())">
-          <Underline class="h-4 w-4" />
-        </button>
-
-        <label class="mail-color-button" aria-label="Text color">
-          <span class="h-4 w-4 border border-black dark:border-white" :style="{ backgroundColor: selectedColor }" />
-          <input
-            v-model="selectedColor"
-            :disabled="isSending"
-            class="sr-only"
-            type="color"
-            @input="applyColor"
-          >
-        </label>
-
-        <div class="mx-1 h-8 w-px shrink-0 bg-gray-200 dark:bg-zinc-700" />
-
-        <button type="button" class="mail-tool-button" :class="{ 'mail-tool-button-active': toolbarState.alignLeft }" :disabled="isSending" aria-label="Align left" @click="runEditorCommand(() => editor?.chain().focus().setTextAlign('left').run())">
-          <AlignLeft class="h-4 w-4" />
-        </button>
-        <button type="button" class="mail-tool-button" :class="{ 'mail-tool-button-active': toolbarState.alignCenter }" :disabled="isSending" aria-label="Align center" @click="runEditorCommand(() => editor?.chain().focus().setTextAlign('center').run())">
-          <AlignCenter class="h-4 w-4" />
-        </button>
-        <button type="button" class="mail-tool-button" :class="{ 'mail-tool-button-active': toolbarState.alignRight }" :disabled="isSending" aria-label="Align right" @click="runEditorCommand(() => editor?.chain().focus().setTextAlign('right').run())">
-          <AlignRight class="h-4 w-4" />
-        </button>
-        <button type="button" class="mail-tool-button" :class="{ 'mail-tool-button-active': toolbarState.bulletList }" :disabled="isSending" aria-label="Bullet list" @click="runEditorCommand(() => editor?.chain().focus().toggleBulletList().run())">
-          <List class="h-4 w-4" />
-        </button>
-        <button type="button" class="mail-tool-button" :class="{ 'mail-tool-button-active': toolbarState.orderedList }" :disabled="isSending" aria-label="Numbered list" @click="runEditorCommand(() => editor?.chain().focus().toggleOrderedList().run())">
-          <ListOrdered class="h-4 w-4" />
-        </button>
-
-        <div class="mx-1 h-8 w-px shrink-0 bg-gray-200 dark:bg-zinc-700" />
-
-        <button type="button" class="mail-tool-button" :disabled="isSending" aria-label="Attach file" @click="openAttachmentPicker">
-          <Paperclip class="h-4 w-4" />
-        </button>
-        <button type="button" class="mail-tool-button" :disabled="isSending" aria-label="Insert image" @click="openInlineImagePicker">
-          <ImageIcon class="h-4 w-4" />
-        </button>
-      </div>
-
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p class="min-h-5 text-sm font-bold" :class="errorMessage ? 'text-red-600 dark:text-red-300' : 'text-green-600 dark:text-green-300'" aria-live="polite">
-          {{ errorMessage || successMessage }}
-        </p>
-
-        <div class="flex items-center gap-2">
-          <button
-            type="button"
-            class="flex h-10 items-center gap-2 border-2 border-black bg-red-100 px-3 text-sm font-black uppercase text-black shadow-[3px_3px_0px_#000] transition active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-white dark:bg-red-950 dark:text-white dark:shadow-[3px_3px_0px_#fff]"
-            :disabled="isSending"
-            aria-label="Discard draft"
-            @click="resetForm"
-          >
-            <Trash2 class="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            class="flex h-10 items-center gap-2 border-2 border-black bg-blue-600 px-4 text-sm font-black uppercase text-white shadow-[3px_3px_0px_#000] transition hover:bg-blue-700 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-white dark:shadow-[3px_3px_0px_#fff]"
-            :disabled="!canSend"
-            @click="sendMail"
-          >
-            <Send class="h-4 w-4" />
-            Send
-          </button>
-        </div>
-      </div>
-    </footer>
-
-    <input
-      ref="attachmentInput"
-      class="hidden"
-      type="file"
-      multiple
-      :accept="Array.from(ALLOWED_ATTACHMENT_TYPES).join(',')"
-      @change="handleAttachmentChange"
-    >
-    <input
-      ref="inlineImageInput"
-      class="hidden"
-      type="file"
-      multiple
-      :accept="Array.from(ALLOWED_INLINE_IMAGE_TYPES).join(',')"
-      @change="handleInlineImageChange"
-    >
-  </section>
-</template>
 
 <style scoped>
 .mail-tool-button,
