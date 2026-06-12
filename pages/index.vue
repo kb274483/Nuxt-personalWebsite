@@ -49,6 +49,7 @@ import type { MenuItem } from '~/types/menu.type'
 import { useModalManager } from '~/stores/modalManager'
 import { usePhotoManager } from '~/stores/photoManager'
 import { createDefaultDesktopApps } from '~/data/defaultDesktopApps'
+import { useIsMobile } from '~/composables/useIsMobile'
 // Components
 import Modal from '~/components/Modal.vue'
 import RightClickMenu from '~/components/apps/RightClickMenu.vue'
@@ -57,6 +58,8 @@ import DesktopCat from '~/components/DesktopCat.vue'
 
 // 狀態新增：目前的選單內容
 const currentMenuItems = ref<MenuItem[]>([])
+
+const { isMobile } = useIsMobile()
 
 // 定義不同的選單設定
 const desktopMenu: MenuItem[] = [
@@ -195,7 +198,7 @@ const handleWindowResize = () => {
 }
 
 onMounted(() => {
-  useDesktopItemsManager().setupDesktopItems(createDefaultDesktopApps())
+  useDesktopItemsManager().setupDesktopItems(createDefaultDesktopApps(isMobile.value))
   usePhotoManager().initialize()
   window.addEventListener('contextmenu', handleContextMenu)
   window.addEventListener('click', closeRightClickMenu)
