@@ -4,12 +4,32 @@ import type { AppItem, AppItemPosition } from '~/types/appItem.type'
 type DesktopAppItem = AppItem & AppItemPosition
 
 const DEFAULT_DESKTOP_ICON_SIZE = 48
+const DESKTOP_START_Y = 50
+const DESKTOP_GAP_Y = 100
+const DESKTOP_X = 10
 
-export const createDefaultDesktopApps = (): DesktopAppItem[] => [
-  { id: 'resume', name: 'Resume', icon: FileUser, disabled_delete: true, x: 10, y: 50, width: DEFAULT_DESKTOP_ICON_SIZE, height: DEFAULT_DESKTOP_ICON_SIZE, zIndex: 1 },
-  { id: 'browser', name: 'Code Works', icon: Code, disabled_delete: true, x: 10, y: 150, width: DEFAULT_DESKTOP_ICON_SIZE, height: DEFAULT_DESKTOP_ICON_SIZE, zIndex: 1 },
-  { id: 'photos', name: 'Gallery', icon: Image, disabled_delete: true, x: 10, y: 250, width: DEFAULT_DESKTOP_ICON_SIZE, height: DEFAULT_DESKTOP_ICON_SIZE, zIndex: 1 },
-  { id: 'settings', name: 'Settings', icon: Settings, disabled_delete: true, x: 10, y: 350, width: DEFAULT_DESKTOP_ICON_SIZE, height: DEFAULT_DESKTOP_ICON_SIZE, zIndex: 1 },
-  { id: 'travel', name: 'Travel Path', icon: Plane, disabled_delete: true, x: 10, y: 450, width: DEFAULT_DESKTOP_ICON_SIZE, height: DEFAULT_DESKTOP_ICON_SIZE, zIndex: 1 },
-  { id: 'mail', name: 'MailBox', icon: Mail, disabled_delete: true, x: 10, y: 550, width: DEFAULT_DESKTOP_ICON_SIZE, height: DEFAULT_DESKTOP_ICON_SIZE, zIndex: 1 },
-]
+const MOBILE_POSITION_OVERRIDES: Record<string, Partial<AppItemPosition>> = {
+  mail: { x: 110 , y: 50 },
+}
+
+const APP_DEFINITIONS = [
+  { id: 'resume', name: 'Resume', icon: FileUser },
+  { id: 'browser', name: 'Code Works', icon: Code },
+  { id: 'photos', name: 'Gallery', icon: Image },
+  { id: 'settings', name: 'Settings', icon: Settings },
+  { id: 'travel', name: 'Travel Path', icon: Plane },
+  { id: 'mail', name: 'MailBox', icon: Mail },
+] as const
+
+export const createDefaultDesktopApps = (isMobile = false): DesktopAppItem[] => 
+  APP_DEFINITIONS.map((app, index) => ({
+    ...app,
+    disabled_delete: true,
+    x: DESKTOP_X,
+    y: DESKTOP_START_Y + index * DESKTOP_GAP_Y,
+    width: DEFAULT_DESKTOP_ICON_SIZE,
+    height: DEFAULT_DESKTOP_ICON_SIZE,
+    zIndex: 1,
+    ...(isMobile ? MOBILE_POSITION_OVERRIDES[app.id] : undefined),
+  }))
+

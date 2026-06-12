@@ -191,6 +191,7 @@ import { usePhotoManager } from '~/stores/photoManager'
 import { useGravityManager } from '~/stores/gravityManager'
 import type { Photo } from '~/types/photo.type'
 import { createDefaultDesktopApps } from '~/data/defaultDesktopApps'
+import { useIsMobile } from '~/composables/useIsMobile'
 
 // 桌布狀態
 const { wallpaper,
@@ -222,6 +223,8 @@ const loading = computed(() => usePhotoManager().loading)
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
 
+const { isMobile } = useIsMobile() 
+
 // 不能按的按鈕
 const tricksyRunCount = ref(0)
 const tricksyButtonStyle = ref({})
@@ -237,7 +240,7 @@ const resetDesktopItems = () => {
     }, 1000)
 
     localStorage.removeItem('desktopItemPositions_v2')
-    useDesktopItemsManager().setupDesktopItems(createDefaultDesktopApps())
+    useDesktopItemsManager().setupDesktopItems(createDefaultDesktopApps(isMobile.value))
 }
 
 const tricksyButton = () => {
