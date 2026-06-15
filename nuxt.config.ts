@@ -41,6 +41,7 @@ export default defineNuxtConfig({
       },
     ],
     '@vercel/speed-insights',
+    '@vercel/analytics'
   ],
   css: ["~/assets/css/main.css"],
   postcss: {
