@@ -6,8 +6,11 @@
 
     <!-- 網格區域 -->
     <div class="flex-1 overflow-y-auto p-4 custom-scrollbar">
-      <div v-if="loading" class="h-full flex items-center justify-center text-gray-400">
-        <span class="animate-pulse">Loading...</span>
+      <div v-if="loading" class="photos-grid grid gap-2 sm:gap-4">
+        <PhotoSkeletonTile
+          v-for="index in skeletonCount"
+          :key="index"
+        />
       </div>
 
       <div v-else 
@@ -24,12 +27,26 @@
           <img 
             :src="photo.thumbnail || '/photo-thumb-placeholder.svg'" 
             :alt="photo.title || 'Untitled'"
-            class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+            class="h-full w-full object-cover transition-all duration-500 group-hover:scale-110"
+            :class="isImageLoaded(photo.id) ? 'opacity-100' : 'opacity-0'"
             loading="lazy"
             decoding="async"
             fetchpriority="low"
+            @load="markImageLoaded(photo.id)"
             @error="(e) => handleGridImageError(e, photo)"
           />
+
+          <Transition
+            leave-active-class="transition-opacity duration-300"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
+          >
+            <PhotoSkeletonTile
+              v-if="!isImageLoaded(photo.id)"
+              class="absolute inset-0 z-10"
+              overlay
+            />
+          </Transition>
           
           <!-- Hover 遮罩 -->
           <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-2">
@@ -189,6 +206,7 @@ import { X, LoaderCircle, ArrowBigRightDash, ArrowBigLeftDash } from 'lucide-vue
 import { useIsMobile } from '~/composables/useIsMobile'
 import { usePhotoManager } from '~/stores/photoManager'
 import { formatDate } from '~/utils/common'
+import PhotoSkeletonTile from '~/components/photos/PhotoSkeleton.vue'
 
 // 判斷是否為手機
 const { isMobile } = useIsMobile()
@@ -205,6 +223,17 @@ const closeLightbox = () => {
 // 照片資料
 const photos = computed(() => usePhotoManager().photos)
 const loading = computed(() => usePhotoManager().loading)
+// 預設骨架數量
+const skeletonCount = 18
+
+// Photos 骨架效果相關
+const loadedImageIDs = ref(new Set<Photo['id']>())
+const markImageLoaded = (photoId: Photo['id'])=>{
+  loadedImageIDs.value.add(photoId)
+}
+const isImageLoaded = (photoId: Photo['id'])=>{
+  return loadedImageIDs.value.has(photoId)
+}
 
 // 燈箱控制按鈕 state
 const isControlBtnShow = ref<boolean>(false)
@@ -245,7 +274,10 @@ const handleImageLoad = () => {
 const handleGridImageError = (e: Event, photo: Photo) => {
   const img = e.target as HTMLImageElement | null
   if (!img) return
-  if (img.dataset.fallbackApplied === '1') return
+  if (img.dataset.fallbackApplied === '1') {
+    markImageLoaded(photo.id)
+    return
+  }
   img.dataset.fallbackApplied = '1'
   // 不要回退載入大圖（避免首次開啟相簿時下載過大）
   img.src = '/photo-thumb-placeholder.svg'
