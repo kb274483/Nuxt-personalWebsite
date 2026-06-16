@@ -69,13 +69,19 @@
       leave-from-class="opacity-100 scale-100"
       leave-to-class="opacity-0 scale-75"
     >
-      <div 
+      <PhotoLightbox
+        v-if="selectedPhoto"
+        :photo="selectedPhoto"
+        :photos="photos"
+        @close="closeLightbox"
+        @navigate="lightboxControl"
+      />
+      <!-- <div 
         v-if="selectedPhoto" 
         class="absolute inset-0 z-50 flex items-center justify-center bg-white/95 dark:bg-[#1e1e1e]/95 backdrop-blur-sm"
         @click.self="closeLightbox"
       >
         <div class="flex flex-col md:flex-row w-full h-full max-w-8xl p-4 gap-4">
-          <!-- 照片 -->
           <div class="flex-1 flex items-center justify-center relative overflow-hidden rounded bg-transparent"
             @mouseenter="controlBtnShow(true)"
             @mouseleave="controlBtnShow(false)"
@@ -119,7 +125,6 @@
             </div>
           </div>
 
-          <!-- 照片資訊 -->
           <div class="relative w-full md:w-64 flex-none bg-gray-50 dark:bg-[#252525] rounded-lg rounded-tr-3xl p-5 flex flex-col gap-4 overflow-y-auto border border-gray-200 dark:border-gray-700"
             :class="{ 'mb-12': isMobile }"
           >
@@ -195,7 +200,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
     </Transition>
   </div>
 </template>
@@ -207,6 +212,7 @@ import { useIsMobile } from '~/composables/useIsMobile'
 import { usePhotoManager } from '~/stores/photoManager'
 import { formatDate } from '~/utils/common'
 import PhotoSkeletonTile from '~/components/photos/PhotoSkeleton.vue'
+import PhotoLightbox from '../photos/PhotoLightbox.vue'
 
 // 判斷是否為手機
 const { isMobile } = useIsMobile()
