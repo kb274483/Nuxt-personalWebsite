@@ -73,8 +73,6 @@ import type { WindowState } from '~/stores/windowManager'
 import { useWindowManager } from '~/stores/windowManager'
 import { useBoundaryCheck } from '~/composables/useBoundaryCheck'
 import { useIsMobile } from '~/composables/useIsMobile'
-import { waapi, cubicBezier } from 'animejs'
-import { delay } from '~/utils/common'
 
 const props = defineProps<{
   windowState: WindowState
@@ -138,13 +136,6 @@ watch(() => props.windowState.height, (newH) => { if (!isResizing.value) height.
 const focusWindow = () => store.focusWindow(props.windowState.id)
 
 const close = async () => {
-  waapi.animate(windowRef.value!, {
-    opacity: [1, 0],
-    scale: [1, 0.9],
-    duration: 150,
-    ease: cubicBezier(0.5, 0, 0.9, 0.3)
-  })
-  await delay(150)
   store.closeWindow(props.windowState.id)
 }
 
@@ -182,7 +173,7 @@ const startResize = (e: MouseEvent) => {
 <style scoped>
 .window-minimize-enter-active,
 .window-minimize-leave-active {
-  transition: all 0.2s ease-out;
+  transition: all 0.5s ease-out;
 }
 .window-minimize-leave-to {
   opacity: 0;
