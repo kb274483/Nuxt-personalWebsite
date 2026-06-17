@@ -82,14 +82,11 @@
 
 <script setup lang="ts">
 import type { Photo } from '~/types/photo.type'
-import { useIsMobile } from '~/composables/useIsMobile'
 import { usePhotoManager } from '~/stores/photoManager'
 import { formatDate } from '~/utils/common'
 import PhotoSkeletonTile from '~/components/photos/PhotoSkeleton.vue'
 import PhotoLightbox from '../photos/PhotoLightbox.vue'
 
-// 判斷是否為手機
-const { isMobile } = useIsMobile()
 // Lightbox State
 const selectedPhoto = ref<Photo | null>(null)
 const openLightbox = (photo: Photo) => {
@@ -97,7 +94,6 @@ const openLightbox = (photo: Photo) => {
 }
 const closeLightbox = () => {
   selectedPhoto.value = null
-  imageLoaded.value = false
 }
 
 // 照片資料
@@ -119,7 +115,6 @@ const isImageLoaded = (photoId: Photo['id'])=>{
 const lightboxControl = (direction: 'prev' | 'next') => {
   const currentIndex = photos.value.findIndex(photo => photo.id === selectedPhoto.value?.id)
   let targetIndex = 0
-  imageLoaded.value = true
   if (direction === 'prev') {
     targetIndex = currentIndex - 1
     if (targetIndex < 0) {
@@ -132,16 +127,6 @@ const lightboxControl = (direction: 'prev' | 'next') => {
     }
   }
   selectedPhoto.value = photos.value[targetIndex] as Photo
-  if (selectedPhoto.value) {
-    imageLoaded.value = false
-  }
-}
-
-// Image Loading
-const imageLoaded = ref<boolean>(false)
-const handleImageLoad = () => {
-  console.log('image loaded')
-  imageLoaded.value = true
 }
 
 const handleGridImageError = (e: Event, photo: Photo) => {
