@@ -28,8 +28,9 @@
           :src="selectedPhoto.src" 
           :alt="selectedPhoto.title || ''"
           class="max-w-full max-h-full object-contain shadow-2xl rounded
-          transition-opacity duration-500 ease-in-out "
+          transition-all duration-500 ease-in-out"
           :class="{ 'opacity-0': !imageLoaded, 'opacity-100': imageLoaded }"
+          :style="{ transform: `scale(${scale})` }"
         />
         <div
           class="absolute inset-0 flex items-center justify-center rounded-lg transition-opacity duration-500 ease-in-out"
@@ -39,26 +40,42 @@
         </div>
       </div>
 
-      <div class="relative w-full md:w-64 flex-none bg-gray-50 dark:bg-[#252525] rounded-lg rounded-tr-3xl p-5 flex flex-col gap-4 overflow-y-auto border border-gray-200 dark:border-gray-700"
-        :class="{ 'mb-12': isMobile }"
+      <div class="flex-none bg-gray-50 dark:bg-[#252525] dark:border-gray-700 border border-gray-200 
+        transition-all duration-300 ease-out"
+        :class="isInfoExpanded
+          ? 'relative w-full flex-none rounded-lg rounded-tr-3xl p-4 pt-10 md:w-64'
+          : 'absolute inset-x-4 bottom-4 z-50 rounded-lg p-3 md:left-auto md:right-4 md:w-96'
+        "
       >
+        <button
+          @click="toggleInfoPanel()"
+          class="absolute right-10 p-2 bg-gray-200 dark:bg-gray-700 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors z-50"
+          :class="isInfoExpanded ? 'top-0' : 'top-2'"
+          aria-label="Close photo description"
+        >
+          <Minimize2 v-if="isInfoExpanded" class="w-5 h-5" />
+          <Maximize2 v-else class="w-5 h-5" />
+        </button>
         <button 
-          class="absolute top-0 right-0 p-2 bg-gray-200 dark:bg-gray-700 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors z-50"
           @click="emit('close')"
+          class="absolute right-0 p-2 bg-gray-200 dark:bg-gray-700 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors z-50"
+          :class="isInfoExpanded ? 'top-0' : 'top-2'"
           aria-label="Close lightbox"
         >
           <X class="w-5 h-5" />
         </button>
-        <div>
+        <div class="pr-20">
           <h3 class="text-lg font-bold mb-1">
             {{ selectedPhoto.title || 'Untitled' }}
           </h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400 whitespace-pre-wrap">
+          <p v-show="isInfoExpanded"
+            class="text-sm text-gray-500 dark:text-gray-400 whitespace-pre-wrap"
+          >
             {{ selectedPhoto.description || 'No description...' }}
           </p>
-
-          <div class="h-px bg-gray-200 dark:bg-gray-700 my-3"></div>
-
+        </div>
+        <div v-show="isInfoExpanded">
+          <div class="h-px bg-gray-200 dark:bg-gray-700 mb-2"></div>
           <p class="text-sm text-gray-500 dark:text-gray-400 whitespace-pre-wrap">Camera：{{ 
               selectedPhoto.exif?.Model ? 
               selectedPhoto.exif.Model : 'Unknown' 
@@ -79,36 +96,35 @@
               selectedPhoto.exif.FNumber : 'Unknown' 
             }}
           </p>
-        </div>
-        
-        <div class="h-px bg-gray-200 dark:bg-gray-700"></div>
+          <div class="h-px bg-gray-200 dark:bg-gray-700 my-2"></div>
 
-        <div class="space-y-3 text-sm">
-          <div v-if="selectedPhoto.shoot_date" class="flex flex-col">
-            <span class="text-xs text-gray-400 uppercase">
-              Shoot Date
-            </span>
-            <span>{{ formatDate(selectedPhoto.shoot_date) }}</span>
-          </div>
-          
-          <div v-if="selectedPhoto.country || selectedPhoto.city" class="flex flex-col">
-            <span class="text-xs text-gray-400 uppercase">
-              Location
-            </span>
-            <span class="flex items-center gap-1">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                {{ [selectedPhoto.city, selectedPhoto.country].filter(Boolean).join(', ') }}
-            </span>
-          </div>
-
-          <div v-if="selectedPhoto.tags && selectedPhoto.tags.length" class="flex flex-col">
-            <span class="text-xs text-gray-400 uppercase mb-1">
-              Tags
-            </span>
-            <div class="flex flex-wrap gap-1">
-              <span v-for="tag in selectedPhoto.tags" :key="tag" class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs rounded-full">
-                #{{ tag }}
+          <div class="space-y-3 text-sm">
+            <div v-if="selectedPhoto.shoot_date" class="flex flex-col">
+              <span class="text-xs text-gray-400 uppercase">
+                Shoot Date
               </span>
+              <span>{{ formatDate(selectedPhoto.shoot_date) }}</span>
+            </div>
+            
+            <div v-if="selectedPhoto.country || selectedPhoto.city" class="flex flex-col">
+              <span class="text-xs text-gray-400 uppercase">
+                Location
+              </span>
+              <span class="flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                  {{ [selectedPhoto.city, selectedPhoto.country].filter(Boolean).join(', ') }}
+              </span>
+            </div>
+
+            <div v-if="selectedPhoto.tags && selectedPhoto.tags.length" class="flex flex-col">
+              <span class="text-xs text-gray-400 uppercase mb-1">
+                Tags
+              </span>
+              <div class="flex flex-wrap gap-1">
+                <span v-for="tag in selectedPhoto.tags" :key="tag" class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs rounded-full">
+                  #{{ tag }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -118,8 +134,8 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue'
-import { X, LoaderCircle, ArrowBigRight, ArrowBigLeft } from 'lucide-vue-next'
+import { watch, } from 'vue'
+import { X, LoaderCircle, ArrowBigRight, ArrowBigLeft, Minimize2, Maximize2 } from 'lucide-vue-next'
 import { useIsMobile } from '~/composables/useIsMobile'
 import { formatDate } from '~/utils/common'
 import type { Photo } from '~/types/photo.type'
@@ -136,6 +152,27 @@ const emit = defineEmits<{
 }>()
 
 const { isMobile } = useIsMobile()
+// ZOOM 常數
+const MIN_SCALE = 1
+const MAX_SCALE = 4
+const SCALE_STEP = 0.25
+
+// ZOOM
+const scale = ref<number>(1)
+const canZoomIn = computed(()=> scale.value < MAX_SCALE)
+const canZoomOut = computed(()=> scale.value > MIN_SCALE)
+
+const zoomIn = ()=>{
+  scale.value = Math.min(scale.value + SCALE_STEP, MAX_SCALE)
+}
+const zoomOut = ()=>{
+  scale.value = Math.max(scale.value - SCALE_STEP, MIN_SCALE)
+}
+const zoomReset = ()=> scale.value = MIN_SCALE
+
+// Photo Description
+const isInfoExpanded = ref<boolean>(true)
+const toggleInfoPanel = () => isInfoExpanded.value = !isInfoExpanded.value
 
 // 燈箱控制按鈕 state
 const isControlBtnShow = ref<boolean>(false)
@@ -161,5 +198,4 @@ watch(
     if(newValue) imageLoaded.value = false
   }
 )
-
 </script>
