@@ -24,20 +24,64 @@
           </button>
         </div>
         <img
+          draggable="false"
+          @dragstart.prevent
           @load="handleImageLoad"
-          :src="selectedPhoto.src" 
+          @pointerdown="startDrag"
+          @pointermove="dragImage"
+          @pointerup="stopDrag"
+          @pointercancel="stopDrag"
+          :style="imageStyle"
+          :src="selectedPhoto.src"
           :alt="selectedPhoto.title || ''"
-          class="max-w-full max-h-full object-contain shadow-2xl rounded
-          transition-all duration-500 ease-in-out"
-          :class="{ 'opacity-0': !imageLoaded, 'opacity-100': imageLoaded }"
-          :style="{ transform: `scale(${scale})` }"
+          :class="[
+            { 'opacity-0': !imageLoaded, 'opacity-100': imageLoaded },
+            scale > MIN_SCALE ? (
+              onDragging ? 
+                'cursor-grabbing transition-none' :
+                'cursor-grab transition-transform duration-200 ease-out'
+              ) : 
+            'cursor-zoom-in transition-transform duration-200 ease-out'
+          ]"
+          class="max-w-full max-h-full select-none touch-none object-contain shadow-2xl rounded"
         />
-        <div
+        <div v-if="!imageLoaded"
           class="absolute inset-0 flex items-center justify-center rounded-lg transition-opacity duration-500 ease-in-out"
           :class="{ 'opacity-0': imageLoaded, 'opacity-100': !imageLoaded }"
         >
           <LoaderCircle class="w-10 h-10 animate-spin" />
         </div>
+      </div>
+
+      <div class="absolute bottom-2 left-1/2 z-[60] flex -translate-x-1/2 items-center gap-1 rounded-full bg-white/10 px-2 py-1 shadow-lg backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/10">
+        <button
+          type="button"
+          class="rounded-full p-2 transition hover:bg-white/80 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-gray-700"
+          :disabled="!canZoomOut"
+          aria-label="Zoom out"
+          @click="zoomOut"
+        >
+          <ZoomOut class="h-4 w-4" />
+        </button>
+
+        <button
+          type="button"
+          class="min-w-12 rounded-full px-2 py-1 text-center text-xs font-medium tabular-nums transition hover:bg-white/80 dark:hover:bg-gray-700"
+          aria-label="Reset zoom"
+          @click="imageViewReset"
+        >
+          {{ Math.round(scale * 100) }}%
+        </button>
+
+        <button
+          type="button"
+          class="rounded-full p-2 transition hover:bg-white/80 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-gray-700"
+          :disabled="!canZoomIn"
+          aria-label="Zoom in"
+          @click="zoomIn"
+        >
+          <ZoomIn class="h-4 w-4" />
+        </button>
       </div>
 
       <div class="flex-none bg-gray-50 dark:bg-[#252525] dark:border-gray-700 border border-gray-200 
@@ -135,7 +179,15 @@
 
 <script setup lang="ts">
 import { watch, } from 'vue'
-import { X, LoaderCircle, ArrowBigRight, ArrowBigLeft, Minimize2, Maximize2 } from 'lucide-vue-next'
+import { X,
+  LoaderCircle,
+  ArrowBigRight,
+  ArrowBigLeft,
+  Minimize2,
+  Maximize2,
+  ZoomIn,
+  ZoomOut,
+} from 'lucide-vue-next'
 import { useIsMobile } from '~/composables/useIsMobile'
 import { formatDate } from '~/utils/common'
 import type { Photo } from '~/types/photo.type'
@@ -169,6 +221,72 @@ const zoomOut = ()=>{
   scale.value = Math.max(scale.value - SCALE_STEP, MIN_SCALE)
 }
 const zoomReset = ()=> scale.value = MIN_SCALE
+const panReset = ()=> {
+  position.value = {
+    x: 0,
+    y: 0,
+  }
+}
+const imageViewReset = ()=>{
+  zoomReset()
+  panReset()
+}
+
+const imageStyle = computed(()=>{
+  return {
+    transform: `translate(${position.value.x}px, ${position.value.y}px) scale(${scale.value})`,
+    transformOrigin: 'center center',
+  }
+})
+
+const position = ref({
+  x: 0,
+  y: 0
+})
+// 相片放大後平移
+const onDragging = ref<boolean>(false)
+const dragStart = ref({
+  pointerX: 0,
+  pointerY: 0,
+  imageX: 0,
+  imageY: 0,
+})
+
+const startDrag = (event: PointerEvent) => {
+  if(scale.value <= MIN_SCALE) return
+
+  onDragging.value = true
+  dragStart.value = {
+    pointerX: event.clientX,
+    pointerY: event.clientY,
+    imageX: position.value.x,
+    imageY: position.value.y,
+  }
+  if (event.currentTarget instanceof HTMLElement) {
+    event.currentTarget.setPointerCapture(event.pointerId)
+  }
+} 
+
+const dragImage = (event: PointerEvent) => {
+  if(!onDragging.value) return
+
+  const deltaX = event.clientX - dragStart.value.pointerX
+  const deltaY = event.clientY - dragStart.value.pointerY
+
+  position.value = {
+    x: dragStart.value.imageX + deltaX,
+    y: dragStart.value.imageY + deltaY,
+  }
+}
+
+const stopDrag = (event: PointerEvent) => {
+  if(!onDragging.value) return
+  onDragging.value = false
+
+  if (event.currentTarget instanceof HTMLElement) {
+    event.currentTarget.releasePointerCapture(event.pointerId)
+  }
+}
 
 // Photo Description
 const isInfoExpanded = ref<boolean>(true)
@@ -195,7 +313,9 @@ const handleImageLoad = () => {
 watch(
   ()=> props.selectedPhoto.src,
   (newValue)=>{
-    if(newValue) imageLoaded.value = false
+    if(!newValue) return
+    imageLoaded.value = false
+    imageViewReset()
   }
 )
 </script>
