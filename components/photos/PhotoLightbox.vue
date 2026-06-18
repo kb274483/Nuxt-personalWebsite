@@ -40,7 +40,7 @@
           :class="[
             { 'opacity-0': !imageLoaded, 'opacity-100': imageLoaded },
             scale > MIN_SCALE ? (
-              onDragging ? 
+              onDragging || onPinching ?
                 'cursor-grabbing transition-none' :
                 'cursor-grab transition-transform duration-200 ease-out'
               ) : 
@@ -56,7 +56,10 @@
         </div>
       </div>
 
-      <div class="absolute bottom-2 left-1/2 z-[60] flex -translate-x-1/2 items-center gap-1 rounded-full bg-white/10 px-2 py-1 shadow-lg backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/10">
+      <div
+        class="absolute left-1/2 z-[60] flex -translate-x-1/2 items-center gap-1 rounded-full bg-white/10 px-2 py-1 shadow-lg backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/10"
+        :class=" isMobile ? 'top-0' : 'bottom-2' "
+      >
         <button
           type="button"
           class="rounded-full p-2 transition hover:bg-white/80 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-gray-700"
@@ -87,7 +90,7 @@
         </button>
       </div>
 
-      <div class="photo-info-panel flex-none bg-gray-50 dark:bg-[#252525] dark:border-gray-700 border border-gray-200
+      <div class="photo-info-panel flex-none backdrop-blur-sm bg-gray-50/50 dark:bg-black/30 dark:border-gray-700 border border-gray-200
         transition-all duration-300 ease-out motion-reduce:transition-none"
         :class="isInfoExpanded
           ? 'relative w-full flex-none rounded-lg rounded-tr-3xl p-4 pt-10 md:w-64'
@@ -207,6 +210,18 @@ type Props = {
   photos: Photo[]
 }
 
+type PointerPosition = {
+  x: number
+  y: number
+}
+
+type PinchState = {
+  startDistance: number
+  startScale: number
+  startFocalPoint: PointerPosition
+  startPosition: PointerPosition
+}
+
 const props = defineProps<Props>()
 const emit = defineEmits<{
   close: []
@@ -243,7 +258,7 @@ const applyZoom = (
     nextPosition.y,
     clampedScale
   )
-  
+
   scale.value = clampedScale
   position.value = clampedPosition
 }
@@ -412,7 +427,118 @@ const dragStart = ref({
   imageY: 0,
 })
 
+const activePointer = new Map<number, PointerPosition>()
+const onPinching = ref<boolean>(false)
+let pinchState: PinchState | null = null
+
+const updateActivePointer = (
+  event: PointerEvent,
+) => {
+  activePointer.set(event.pointerId, {
+    x: event.clientX,
+    y: event.clientY,
+  })
+}
+
+const getPointerPair = (): [PointerPosition, PointerPosition] | null => {
+  const pointers = [...activePointer.values()]
+
+  if (pointers.length !== 2) return null
+
+  return [pointers[0]!, pointers[1]!]
+}
+
+const getPointerDistance = (
+  first: PointerPosition,
+  second: PointerPosition,
+) => {
+  return Math.hypot(
+    second.x - first.x,
+    second.y - first.y,
+  )
+}
+
+const getPointerMidpoint = (
+  first: PointerPosition,
+  second: PointerPosition,
+): PointerPosition => {
+  return {
+    x: (first.x + second.x) / 2,
+    y: (first.y + second.y) / 2,
+  }
+}
+
+const startPinch = () => {
+  const pointerPair = getPointerPair()
+
+  if (!pointerPair) return
+
+  const [first, second] = pointerPair
+  const startDistance = getPointerDistance(first, second)
+  const midpoint = getPointerMidpoint(first, second)
+  const startFocalPoint = getViewportPoint(midpoint.x, midpoint.y)
+
+  if (startDistance === 0 || !startFocalPoint) return
+
+  pinchState = {
+    startDistance,
+    startScale: scale.value,
+    startFocalPoint,
+    startPosition: { ...position.value },
+  }
+  onPinching.value = true
+}
+
+const updatePinch = () => {
+  const pointerPair = getPointerPair()
+
+  if (!pointerPair || !pinchState) return
+
+  const [first, second] = pointerPair
+  const currentDistance = getPointerDistance(first, second)
+  const midpoint = getPointerMidpoint(first, second)
+  const currentFocalPoint = getViewportPoint(midpoint.x, midpoint.y)
+
+  if (!currentFocalPoint) return
+
+  const nextScale = clamp(
+    pinchState.startScale *
+      (currentDistance / pinchState.startDistance),
+    MIN_SCALE,
+    MAX_SCALE,
+  )
+  const scaleRatio = nextScale / pinchState.startScale
+  const nextPosition = {
+    x:
+      currentFocalPoint.x -
+      (pinchState.startFocalPoint.x - pinchState.startPosition.x) *
+        scaleRatio,
+    y:
+      currentFocalPoint.y -
+      (pinchState.startFocalPoint.y - pinchState.startPosition.y) *
+        scaleRatio,
+  }
+
+  applyZoom(nextScale, nextPosition)
+}
+
 const startDrag = (event: PointerEvent) => {
+  updateActivePointer(event)
+
+  if (event.currentTarget instanceof HTMLElement) {
+    event.currentTarget.setPointerCapture(event.pointerId)
+  }
+
+  if (activePointer.size === 2) {
+    onDragging.value = false
+    startPinch()
+    return
+  }
+
+  if(activePointer.size !== 1) {
+    onDragging.value = false
+    return
+  }
   if(scale.value <= MIN_SCALE) return
 
   onDragging.value = true
@@ -422,13 +548,25 @@ const startDrag = (event: PointerEvent) => {
     imageX: position.value.x,
     imageY: position.value.y,
   }
-  if (event.currentTarget instanceof HTMLElement) {
-    event.currentTarget.setPointerCapture(event.pointerId)
-  }
 } 
 
 const dragImage = (event: PointerEvent) => {
-  if(!onDragging.value) return
+  if (!activePointer.has(event.pointerId)) {
+    return
+  }
+  updateActivePointer(event)
+
+  if (activePointer.size === 2) {
+    updatePinch()
+    return
+  }
+
+  if (
+    activePointer.size !== 1 ||
+    !onDragging.value
+  ) {
+    return
+  }
 
   const deltaX = event.clientX - dragStart.value.pointerX
   const deltaY = event.clientY - dragStart.value.pointerY
@@ -439,10 +577,19 @@ const dragImage = (event: PointerEvent) => {
 }
 
 const stopDrag = (event: PointerEvent) => {
-  if(!onDragging.value) return
+  activePointer.delete(event.pointerId)
   onDragging.value = false
 
-  if (event.currentTarget instanceof HTMLElement) {
+  if (activePointer.size < 2) {
+    pinchState = null
+    onPinching.value = false
+  }
+
+  if (event.currentTarget instanceof HTMLElement &&
+    event.currentTarget.hasPointerCapture(
+      event.pointerId,
+    )
+  ) {
     event.currentTarget.releasePointerCapture(event.pointerId)
   }
 }
