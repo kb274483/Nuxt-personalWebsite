@@ -8,6 +8,7 @@
         class="flex-1 flex items-center justify-center relative overflow-hidden rounded bg-transparent"
         @mouseenter="controlBtnShow(true)"
         @mouseleave="controlBtnShow(false)"
+        @wheel.prevent="handleWheel"
       >
         <div
           class="absolute inset-0 w-full h-full flex items-center justify-between rounded-lg transition-opacity duration-500 ease-in-out z-50 pointer-events-none"
@@ -212,14 +213,15 @@ const emit = defineEmits<{
   navigate: [direction: 'prev' | 'next']
 }>()
 
-const { isMobile } = useIsMobile()
-const photoContainer = useTemplateRef<HTMLElement>('photoContainer')
-const photoInstance = useTemplateRef<HTMLImageElement>('photoInstance')
-  
-// ZOOM 常數
+// 常數
 const MIN_SCALE = 1
 const MAX_SCALE = 4
 const SCALE_STEP = 0.25
+const WHEEL_ZOOM_SENSITIVITY = 0.0015
+
+const { isMobile } = useIsMobile()
+const photoContainer = useTemplateRef<HTMLElement>('photoContainer')
+const photoInstance = useTemplateRef<HTMLImageElement>('photoInstance')
 
 // ZOOM
 const scale = ref<number>(1)
@@ -292,6 +294,45 @@ const getPhotoMetrics = () => {
   }
 }
 
+// 取得容器中心座標
+const getViewportPoint = (
+  clientX: number,
+  clientY: number,
+) => {
+  const viewport = photoContainer.value
+
+  if (!viewport) return null
+
+  const rect = viewport.getBoundingClientRect()
+
+  return {
+    x: clientX - (rect.left + rect.width / 2),
+    y: clientY - (rect.top + rect.height / 2),
+  }
+}
+
+// 計算滑鼠與容器中心差值
+const getFocalPosition = (
+  focalPoint:{
+    x: number,
+    y: number,
+  },
+  nextScale: number
+) => {
+  const scaleRatio = nextScale / scale.value
+  return {
+    x:
+      focalPoint.x -
+      (focalPoint.x - position.value.x) *
+        scaleRatio,
+
+    y:
+      focalPoint.y -
+      (focalPoint.y - position.value.y) *
+        scaleRatio,
+  }
+}
+
 const getPanBounds = (targetScale = scale.value):PanBound => {
   const metrics = getPhotoMetrics()
   if(!metrics){
@@ -321,6 +362,33 @@ const getPanBounds = (targetScale = scale.value):PanBound => {
     minY: -maxY,
     maxY,
   }
+}
+
+const handleWheel = (event: WheelEvent) => {
+  if(isMobile.value) return
+
+  const focalPoint = getViewportPoint(
+    event.clientX,
+    event.clientY,
+  )
+
+  if(!focalPoint) return
+  
+  const zoomFactor = Math.exp(-event.deltaY * WHEEL_ZOOM_SENSITIVITY)
+  const nextScale = clamp(
+    scale.value * zoomFactor,
+    MIN_SCALE,
+    MAX_SCALE,
+  )
+
+  if(nextScale === scale.value) return
+
+  const nextPosition = getFocalPosition(
+    focalPoint,
+    nextScale
+  )
+  
+  applyZoom(nextScale, nextPosition)
 }
 
 const clamp = (value: number, min: number, max: number): number => {
