@@ -4,7 +4,8 @@
     @click.self="emit('close')"
   >
     <div class="flex flex-col md:flex-row w-full h-full max-w-8xl p-4 gap-4">
-      <div class="flex-1 flex items-center justify-center relative overflow-hidden rounded bg-transparent"
+      <div ref="photoContainer"
+        class="flex-1 flex items-center justify-center relative overflow-hidden rounded bg-transparent"
         @mouseenter="controlBtnShow(true)"
         @mouseleave="controlBtnShow(false)"
       >
@@ -24,6 +25,7 @@
           </button>
         </div>
         <img
+          ref="photoInstance"
           draggable="false"
           @dragstart.prevent
           @load="handleImageLoad"
@@ -178,7 +180,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, shallowRef, watch } from 'vue'
+import { nextTick, watch, useTemplateRef } from 'vue'
 import { X,
   LoaderCircle,
   ArrowBigRight,
@@ -192,6 +194,13 @@ import { useIsMobile } from '~/composables/useIsMobile'
 import { formatDate } from '~/utils/common'
 import type { Photo } from '~/types/photo.type'
 
+type PanBound = {
+  minX: number
+  minY: number
+  maxX: number
+  maxY: number
+}
+
 type Props = {
   selectedPhoto: Photo
   photos: Photo[]
@@ -204,6 +213,9 @@ const emit = defineEmits<{
 }>()
 
 const { isMobile } = useIsMobile()
+const photoContainer = useTemplateRef<HTMLElement>('photoContainer')
+const photoInstance = useTemplateRef<HTMLImageElement>('photoInstance')
+  
 // ZOOM 常數
 const MIN_SCALE = 1
 const MAX_SCALE = 4
@@ -243,6 +255,65 @@ const position = ref({
   x: 0,
   y: 0
 })
+
+// 取得容器與相片的基礎位置
+const getPhotoMetrics = () => {
+  const viewport = photoContainer.value
+  const image = photoInstance.value
+
+  if (!viewport || !image) return null
+
+  return {
+    viewportWidth: viewport.clientWidth,
+    viewportHeight: viewport.clientHeight,
+    imageWidth: image.clientWidth,
+    imageHeight: image.clientHeight,
+  }
+}
+
+const getPanBounds = (targetScale = scale.value):PanBound => {
+  const metrics = getPhotoMetrics()
+  if(!metrics){
+    return {
+      minX: 0,
+      minY: 0,
+      maxX: 0,
+      maxY: 0,
+    }
+  }
+
+  const scaledImageWidth = metrics.imageWidth * targetScale
+  const scaledImageHeight = metrics.imageHeight * targetScale
+
+  const maxX = Math.max(
+    0,
+    (scaledImageWidth - metrics.viewportWidth) / 2,
+  )
+  const maxY = Math.max(
+    0,
+    (scaledImageHeight - metrics.viewportHeight) / 2,
+  )
+
+  return {
+    minX: -maxX,
+    maxX,
+    minY: -maxY,
+    maxY,
+  }
+}
+
+const clamp = (value: number, min: number, max: number): number => {
+  return Math.min(Math.max(value, min), max)
+}
+
+const clampPosition = (x: number, y: number, targetScale = scale.value) => {
+  const bounds = getPanBounds(targetScale)
+  return {
+    x: clamp(x, bounds.minX, bounds.maxX),
+    y: clamp(y, bounds.minY, bounds.maxY),
+  }
+}
+
 // 相片放大後平移
 const onDragging = ref<boolean>(false)
 const dragStart = ref({
@@ -272,11 +343,10 @@ const dragImage = (event: PointerEvent) => {
 
   const deltaX = event.clientX - dragStart.value.pointerX
   const deltaY = event.clientY - dragStart.value.pointerY
+  const nextX = dragStart.value.imageX + deltaX
+  const nextY = dragStart.value.imageY + deltaY
 
-  position.value = {
-    x: dragStart.value.imageX + deltaX,
-    y: dragStart.value.imageY + deltaY,
-  }
+  position.value = clampPosition(nextX, nextY)
 }
 
 const stopDrag = (event: PointerEvent) => {

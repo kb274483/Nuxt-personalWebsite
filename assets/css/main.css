@@ -104,7 +104,7 @@ html.photo-info-view-transition::view-transition-new(root) {
 }
 
 ::view-transition-group(photo-info-panel) {
-  animation-duration: 420ms;
+  animation-duration: 620ms;
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -116,16 +116,16 @@ html.photo-info-view-transition::view-transition-new(root) {
 }
 
 ::view-transition-group(photo-info-title) {
-  animation-duration: 360ms;
+  animation-duration: 560ms;
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 ::view-transition-old(photo-info-details) {
-  animation: photo-info-fade-out 120ms ease-out both;
+  animation: photo-info-fade-out 320ms ease-out both;
 }
 
 ::view-transition-new(photo-info-details) {
-  animation: photo-info-fade-in 180ms 120ms ease-out both;
+  animation: photo-info-fade-in 380ms 320ms ease-out both;
 }
 
 @keyframes photo-info-fade-out {
