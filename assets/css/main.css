@@ -84,3 +84,60 @@ html.dark::view-transition-new(root) {
     clip-path: circle(0% at var(--pointer-x) var(--pointer-y));
   }
 }
+
+/* Photo details morph from the sidebar into a compact caption card. */
+html.photo-info-view-transition .photo-info-panel {
+  view-transition-name: photo-info-panel;
+}
+
+html.photo-info-view-transition .photo-info-title {
+  view-transition-name: photo-info-title;
+}
+
+html.photo-info-view-transition .photo-info-details {
+  view-transition-name: photo-info-details;
+}
+
+html.photo-info-view-transition::view-transition-old(root),
+html.photo-info-view-transition::view-transition-new(root) {
+  animation: none;
+}
+
+::view-transition-group(photo-info-panel) {
+  animation-duration: 420ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+::view-transition-old(photo-info-panel),
+::view-transition-new(photo-info-panel),
+::view-transition-old(photo-info-title),
+::view-transition-new(photo-info-title) {
+  mix-blend-mode: normal;
+}
+
+::view-transition-group(photo-info-title) {
+  animation-duration: 360ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+::view-transition-old(photo-info-details) {
+  animation: photo-info-fade-out 120ms ease-out both;
+}
+
+::view-transition-new(photo-info-details) {
+  animation: photo-info-fade-in 180ms 120ms ease-out both;
+}
+
+@keyframes photo-info-fade-out {
+  to {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+@keyframes photo-info-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}

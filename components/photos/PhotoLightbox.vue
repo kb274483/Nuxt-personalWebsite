@@ -84,8 +84,8 @@
         </button>
       </div>
 
-      <div class="flex-none bg-gray-50 dark:bg-[#252525] dark:border-gray-700 border border-gray-200 
-        transition-all duration-300 ease-out"
+      <div class="photo-info-panel flex-none bg-gray-50 dark:bg-[#252525] dark:border-gray-700 border border-gray-200
+        transition-all duration-300 ease-out motion-reduce:transition-none"
         :class="isInfoExpanded
           ? 'relative w-full flex-none rounded-lg rounded-tr-3xl p-4 pt-10 md:w-64'
           : 'absolute inset-x-4 bottom-4 z-50 rounded-lg p-3 md:left-auto md:right-4 md:w-96'
@@ -109,16 +109,16 @@
           <X class="w-5 h-5" />
         </button>
         <div class="pr-20">
-          <h3 class="text-lg font-bold mb-1">
+          <h3 class="photo-info-title text-lg font-bold mb-1">
             {{ selectedPhoto.title || 'Untitled' }}
           </h3>
-          <p v-show="isInfoExpanded"
+        </div>
+        <div v-show="isInfoExpanded" class="photo-info-details">
+          <p
             class="text-sm text-gray-500 dark:text-gray-400 whitespace-pre-wrap"
           >
             {{ selectedPhoto.description || 'No description...' }}
           </p>
-        </div>
-        <div v-show="isInfoExpanded">
           <div class="h-px bg-gray-200 dark:bg-gray-700 mb-2"></div>
           <p class="text-sm text-gray-500 dark:text-gray-400 whitespace-pre-wrap">Camera：{{ 
               selectedPhoto.exif?.Model ? 
@@ -178,7 +178,7 @@
 </template>
 
 <script setup lang="ts">
-import { watch, } from 'vue'
+import { nextTick, shallowRef, watch } from 'vue'
 import { X,
   LoaderCircle,
   ArrowBigRight,
@@ -289,8 +289,38 @@ const stopDrag = (event: PointerEvent) => {
 }
 
 // Photo Description
+let infoTransition: ViewTransition | null = null
 const isInfoExpanded = ref<boolean>(true)
-const toggleInfoPanel = () => isInfoExpanded.value = !isInfoExpanded.value
+const toggleInfoPanel = () => {
+  const shouldUseViewTransition =
+    !isMobile.value &&
+    'startViewTransition' in document &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  if (!shouldUseViewTransition) {
+    isInfoExpanded.value = !isInfoExpanded.value
+    return
+  }
+
+  if (infoTransition) return
+
+  const root = document.documentElement
+  root.classList.add('photo-info-view-transition')
+
+  const transition = document.startViewTransition(async () => {
+    isInfoExpanded.value = !isInfoExpanded.value
+    await nextTick()
+  })
+  infoTransition = transition
+
+  transition.finished
+    .catch(() => undefined)
+    .finally(() => {
+      if (infoTransition !== transition) return
+      infoTransition = null
+      root.classList.remove('photo-info-view-transition')
+    })
+}
 
 // 燈箱控制按鈕 state
 const isControlBtnShow = ref<boolean>(false)
