@@ -226,22 +226,43 @@ const scale = ref<number>(1)
 const canZoomIn = computed(()=> scale.value < MAX_SCALE)
 const canZoomOut = computed(()=> scale.value > MIN_SCALE)
 
-const zoomIn = ()=>{
-  scale.value = Math.min(scale.value + SCALE_STEP, MAX_SCALE)
+// 取得接下來被放大的倍率與位置
+const applyZoom = (
+  nextScale: number,
+  nextPosition: {
+    x: number,
+    y: number
+  } = position.value
+) => {
+  // 並限制 Scale 跟 Position 的值再更新
+  const clampedScale = clamp(nextScale,MIN_SCALE, MAX_SCALE)
+  const clampedPosition = clampPosition(
+    nextPosition.x,
+    nextPosition.y,
+    clampedScale
+  )
+  
+  scale.value = clampedScale
+  position.value = clampedPosition
 }
-const zoomOut = ()=>{
-  scale.value = Math.max(scale.value - SCALE_STEP, MIN_SCALE)
+
+const zoomIn = () => {
+  applyZoom(scale.value + SCALE_STEP)
 }
-const zoomReset = ()=> scale.value = MIN_SCALE
-const panReset = ()=> {
-  position.value = {
+
+const zoomOut = () => {
+  applyZoom(scale.value - SCALE_STEP)
+}
+
+const zoomReset = () => {
+  applyZoom(MIN_SCALE, {
     x: 0,
     y: 0,
-  }
+  })
 }
-const imageViewReset = ()=>{
+
+const imageViewReset = () => {
   zoomReset()
-  panReset()
 }
 
 const imageStyle = computed(()=>{
