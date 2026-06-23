@@ -192,7 +192,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, watch, useTemplateRef } from 'vue'
+import { nextTick, watch, useTemplateRef, onMounted, onBeforeUnmount } from 'vue'
 import { X,
   LoaderCircle,
   ArrowBigRight,
@@ -710,15 +710,57 @@ const { applyImageFallback } = useImageFallback({
 const handleImageError = (event: Event) => {
   applyImageFallback(event)
 }
+// Image Preload
+const requestedImages = new Set<Photo['id']>()
+
+const addToRequestedImages = (photo:Photo)=>{
+  requestedImages.add(photo.id)
+}
+const preloadImage = (photo?:Photo) => {
+  if(!photo) return
+  if(requestedImages.has(photo.id)) return
+
+  requestedImages.add(photo.id)
+  const image = new Image()
+  image.src = photo.src
+}
+
+const preloadNeighbors = (photos: Photo[], currentIndex: number) => {
+  const current = photos[currentIndex]
+  const photosLength = photos.length - 1
+  const prev = currentIndex === 0 ? photos[photosLength] : photos[currentIndex - 1]
+  const next = currentIndex === photosLength ? photos[0] : photos[currentIndex + 1]
+
+  if (current) addToRequestedImages(current)
+  preloadImage(prev)
+  preloadImage(next)
+}
+
+const getPhotosIndex = (photo:Photo)=>{
+  return props.photos.findIndex( item => item.id === photo.id)
+}
 
 watch(
   ()=> props.selectedPhoto.src,
   (newValue)=>{
     if(!newValue) return
+    
+    const index = getPhotosIndex(props.selectedPhoto)
+    preloadNeighbors(props.photos, index)
     imageLoaded.value = false
     imageViewReset()
   }
 )
+
+onMounted(()=>{
+  const index = getPhotosIndex(props.selectedPhoto)
+  preloadNeighbors(props.photos, index)
+})
+
+onBeforeUnmount(()=>{
+  requestedImages.clear()
+})
+
 </script>
 
 <style scoped>
