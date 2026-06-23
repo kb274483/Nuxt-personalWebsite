@@ -198,6 +198,12 @@ import { useIsMobile } from '~/composables/useIsMobile'
 import { formatDate } from '~/utils/common'
 import type { Photo } from '~/types/photo.type'
 
+type SwipeState = {
+  pointerId: number
+  startX: number
+  startY: number
+}
+
 type PanBound = {
   minX: number
   minY: number
@@ -233,6 +239,7 @@ const MIN_SCALE = 1
 const MAX_SCALE = 4
 const SCALE_STEP = 0.25
 const WHEEL_ZOOM_SENSITIVITY = 0.0015
+const SWIPE_THRESHOLD = 100
 
 const { isMobile } = useIsMobile()
 const photoContainer = useTemplateRef<HTMLElement>('photoContainer')
@@ -242,6 +249,9 @@ const photoInstance = useTemplateRef<HTMLImageElement>('photoInstance')
 const scale = ref<number>(1)
 const canZoomIn = computed(()=> scale.value < MAX_SCALE)
 const canZoomOut = computed(()=> scale.value > MIN_SCALE)
+
+// Swipe
+let swipeState: SwipeState | null = null
 
 // 取得接下來被放大的倍率與位置
 const applyZoom = (
@@ -530,16 +540,26 @@ const startDrag = (event: PointerEvent) => {
   }
 
   if (activePointer.size === 2) {
+    swipeState = null
     onDragging.value = false
     startPinch()
     return
   }
 
-  if(activePointer.size !== 1) {
+  if(activePointer.size > 2) {
+    swipeState = null
     onDragging.value = false
     return
   }
-  if(scale.value <= MIN_SCALE) return
+  if(scale.value <= MIN_SCALE) {
+    onDragging.value = false
+    swipeState = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+    }
+    return
+  }
 
   onDragging.value = true
   dragStart.value = {
@@ -560,13 +580,9 @@ const dragImage = (event: PointerEvent) => {
     updatePinch()
     return
   }
-
-  if (
-    activePointer.size !== 1 ||
-    !onDragging.value
-  ) {
-    return
-  }
+  if (activePointer.size !== 1) return
+  if (swipeState?.pointerId === event.pointerId) return
+  if(!onDragging.value) return
 
   const deltaX = event.clientX - dragStart.value.pointerX
   const deltaY = event.clientY - dragStart.value.pointerY
@@ -577,6 +593,26 @@ const dragImage = (event: PointerEvent) => {
 }
 
 const stopDrag = (event: PointerEvent) => {
+  let direction: 'prev' | 'next' | null = null
+  if(
+    event.type === 'pointerup' &&
+    swipeState?.pointerId === event.pointerId
+  ){
+    const deltaX = event.clientX - swipeState.startX
+    const deltaY = event.clientY - swipeState.startY
+    const horizontalDistance = Math.abs(deltaX)
+    const verticalDistance = Math.abs(deltaY)
+
+    const isHorizontalSwipe =
+      horizontalDistance >= SWIPE_THRESHOLD &&
+      horizontalDistance > verticalDistance
+
+    if (isHorizontalSwipe) {
+      direction = deltaX < 0 ? 'next' : 'prev'
+    }
+  }
+
+  swipeState = null
   activePointer.delete(event.pointerId)
   onDragging.value = false
 
@@ -592,6 +628,8 @@ const stopDrag = (event: PointerEvent) => {
   ) {
     event.currentTarget.releasePointerCapture(event.pointerId)
   }
+
+  if (direction) emit('navigate', direction)
 }
 
 // Photo Description
