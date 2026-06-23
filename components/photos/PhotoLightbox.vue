@@ -245,7 +245,7 @@ const emit = defineEmits<{
 
 // 常數
 const MIN_SCALE = 1
-const MAX_SCALE = 4
+const MAX_SCALE = 5
 const SCALE_STEP = 0.25
 const WHEEL_ZOOM_SENSITIVITY = 0.0015
 const SWIPE_THRESHOLD = 100
