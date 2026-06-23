@@ -138,11 +138,12 @@
                         >
                             <img
                                 :src="photo.thumbnail || '/photo-thumb-placeholder.svg'"
+                                :alt="photo.title || 'Wallpaper photo'"
                                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 rounded-lg"
                                 loading="lazy"
                                 decoding="async"
                                 fetchpriority="low"
-                                @error="(e) => handleWallpaperImageError(e, photo)"
+                                @error="handleWallpaperImageError"
                             />
                             <div v-if="wallpaper === photo.src" class="absolute inset-0 bg-black/20 flex items-center justify-center">
                                 <Check class="w-6 h-6 text-white drop-shadow-md" />
@@ -189,9 +190,9 @@ import { Sun, Moon } from 'lucide-vue-next'
 import { useWallpaper } from '~/composables/useWallpaper'
 import { usePhotoManager } from '~/stores/photoManager'
 import { useGravityManager } from '~/stores/gravityManager'
-import type { Photo } from '~/types/photo.type'
 import { createDefaultDesktopApps } from '~/data/defaultDesktopApps'
 import { useIsMobile } from '~/composables/useIsMobile'
+import { useImageFallback } from '~/composables/useImageFallback'
 
 // 桌布狀態
 const { wallpaper,
@@ -318,14 +319,7 @@ const handleGravity = ()=>{
     }
 }
 
-const handleWallpaperImageError = (e: Event, photo: Photo) => {
-  const img = e.target as HTMLImageElement | null
-  if (!img) return
-  if (img.dataset.fallbackApplied === '1') return
-  img.dataset.fallbackApplied = '1'
-  // 不要回退載入大圖（避免首次進站時下載過大）
-  img.src = '/photo-thumb-placeholder.svg'
-}
+const { applyImageFallback: handleWallpaperImageError } = useImageFallback()
 
 onMounted(async () => {
     if(!usePhotoManager().loaded) {

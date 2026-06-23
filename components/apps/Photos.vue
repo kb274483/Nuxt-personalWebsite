@@ -33,7 +33,7 @@
             decoding="async"
             fetchpriority="low"
             @load="markImageLoaded(photo.id)"
-            @error="(e) => handleGridImageError(e, photo)"
+            @error="(event) => handleGridImageError(event, photo.id)"
           />
 
           <Transition
@@ -86,6 +86,7 @@ import { usePhotoManager } from '~/stores/photoManager'
 import { formatDate } from '~/utils/common'
 import PhotoSkeletonTile from '~/components/photos/PhotoSkeleton.vue'
 import PhotoLightbox from '../photos/PhotoLightbox.vue'
+import { useImageFallback } from '~/composables/useImageFallback'
 
 // Lightbox State
 const selectedPhoto = ref<Photo | null>(null)
@@ -129,16 +130,11 @@ const lightboxControl = (direction: 'prev' | 'next') => {
   selectedPhoto.value = photos.value[targetIndex] as Photo
 }
 
-const handleGridImageError = (e: Event, photo: Photo) => {
-  const img = e.target as HTMLImageElement | null
-  if (!img) return
-  if (img.dataset.fallbackApplied === '1') {
-    markImageLoaded(photo.id)
-    return
-  }
-  img.dataset.fallbackApplied = '1'
-  // 不要回退載入大圖（避免首次開啟相簿時下載過大）
-  img.src = '/photo-thumb-placeholder.svg'
+const { applyImageFallback } = useImageFallback()
+const handleGridImageError = (event: Event, photoId: Photo['id']) => {
+  applyImageFallback(event, {
+    onFallbackError: () => markImageLoaded(photoId),
+  })
 }
 
 onMounted(async () => {

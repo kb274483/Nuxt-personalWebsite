@@ -35,6 +35,7 @@
               draggable="false"
               @dragstart.prevent
               @load="handleImageLoad"
+              @error="handleImageError"
               @pointerdown="startDrag"
               @pointermove="dragImage"
               @pointerup="stopDrag"
@@ -204,6 +205,7 @@ import { X,
 import { useIsMobile } from '~/composables/useIsMobile'
 import { formatDate } from '~/utils/common'
 import type { Photo } from '~/types/photo.type'
+import { useImageFallback } from '~/composables/useImageFallback'
 
 type SwipeState = {
   pointerId: number
@@ -701,6 +703,12 @@ const shouldShowControls = computed(() => {
 const imageLoaded = ref<boolean>(false)
 const handleImageLoad = () => {
   imageLoaded.value = true
+}
+const { applyImageFallback } = useImageFallback({
+  onFallbackError: handleImageLoad,
+})
+const handleImageError = (event: Event) => {
+  applyImageFallback(event)
 }
 
 watch(
