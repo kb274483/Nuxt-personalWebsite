@@ -14,42 +14,49 @@
           class="absolute inset-0 w-full h-full flex items-center justify-between rounded-lg transition-opacity duration-500 ease-in-out z-50 pointer-events-none"
           :class="{ 'opacity-100': shouldShowControls, 'opacity-0': !shouldShowControls }"
         >
-          <button @click="emit('navigate', 'prev')" class="pointer-events-auto rounded-full focus:outline-none" aria-label="Previous photo">
+          <button @click="navigatePhoto('prev')" class="pointer-events-auto rounded-full focus:outline-none" aria-label="Previous photo">
             <ArrowBigLeft
               class="w-8 h-8 cursor-pointer rounded-full p-2 bg-white/50 dark:bg-gray-700/50 hover:bg-white/90 dark:hover:bg-gray-700/90 transition-all duration-200 hover:scale-110 opacity-50"
             />
           </button>
-          <button @click="emit('navigate', 'next')" class="pointer-events-auto rounded-full focus:outline-none" aria-label="Next photo">
+          <button @click="navigatePhoto('next')" class="pointer-events-auto rounded-full focus:outline-none" aria-label="Next photo">
             <ArrowBigRight
               class="w-8 h-8 cursor-pointer rounded-full p-2 bg-white/50 dark:bg-gray-700/50 hover:bg-white/90 dark:hover:bg-gray-700/90 transition-all duration-200 hover:scale-110 opacity-50" 
             />
           </button>
         </div>
-        <img
-          ref="photoInstance"
-          draggable="false"
-          @dragstart.prevent
-          @load="handleImageLoad"
-          @pointerdown="startDrag"
-          @pointermove="dragImage"
-          @pointerup="stopDrag"
-          @pointercancel="stopDrag"
-          :style="imageStyle"
-          :src="selectedPhoto.src"
-          :alt="selectedPhoto.title || ''"
-          :class="[
-            { 'opacity-0': !imageLoaded, 'opacity-100': imageLoaded },
-            scale > MIN_SCALE ? (
-              onDragging || onPinching ?
-                'cursor-grabbing transition-none' :
-                'cursor-grab transition-transform duration-200 ease-out'
-              ) : 
-            'cursor-zoom-in transition-transform duration-200 ease-out'
-          ]"
-          class="max-w-full max-h-full select-none touch-none object-contain shadow-2xl rounded"
-        />
-        <div v-if="!imageLoaded"
-          class="absolute inset-0 flex items-center justify-center rounded-lg transition-opacity duration-500 ease-in-out"
+        <Transition :name="photoTransitionName">
+          <div
+            :key="selectedPhoto.src"
+            class="photo-transition-layer absolute inset-0 z-10 flex items-center justify-center"
+          >
+            <img
+              ref="photoInstance"
+              draggable="false"
+              @dragstart.prevent
+              @load="handleImageLoad"
+              @pointerdown="startDrag"
+              @pointermove="dragImage"
+              @pointerup="stopDrag"
+              @pointercancel="stopDrag"
+              :style="imageStyle"
+              :src="selectedPhoto.src"
+              :alt="selectedPhoto.title || ''"
+              :class="[
+                { 'opacity-0': !imageLoaded, 'opacity-100': imageLoaded },
+                scale > MIN_SCALE ? (
+                  onDragging || onPinching ?
+                    'cursor-grabbing transition-none' :
+                    'cursor-grab transition duration-300 ease-out'
+                  ) : 
+                'cursor-zoom-in transition duration-300 ease-out'
+              ]"
+              class="max-w-full max-h-full select-none touch-none object-contain shadow-2xl rounded"
+            />
+          </div>
+        </Transition>
+        <div 
+          class="absolute inset-0 z-0 flex items-center justify-center rounded-lg transition-opacity duration-500 ease-in-out"
           :class="{ 'opacity-0': imageLoaded, 'opacity-100': !imageLoaded }"
         >
           <LoaderCircle class="w-10 h-10 animate-spin" />
@@ -252,6 +259,18 @@ const canZoomOut = computed(()=> scale.value > MIN_SCALE)
 
 // Swipe
 let swipeState: SwipeState | null = null
+const navigationDirection = ref<'prev' | 'next'>('next')
+
+const photoTransitionName = computed(()=>
+  navigationDirection.value === 'next' ?
+    'photo-slide-next' :
+    'photo-slide-prev'
+)
+
+const navigatePhoto = (direction: 'prev' | 'next') => {
+  navigationDirection.value = direction
+  emit('navigate', direction)
+}
 
 // 取得接下來被放大的倍率與位置
 const applyZoom = (
@@ -538,20 +557,20 @@ const startDrag = (event: PointerEvent) => {
   if (event.currentTarget instanceof HTMLElement) {
     event.currentTarget.setPointerCapture(event.pointerId)
   }
-
   if (activePointer.size === 2) {
     swipeState = null
     onDragging.value = false
     startPinch()
     return
   }
-
   if(activePointer.size > 2) {
     swipeState = null
     onDragging.value = false
     return
   }
   if(scale.value <= MIN_SCALE) {
+    if (event.pointerType !== 'touch') return
+    
     onDragging.value = false
     swipeState = {
       pointerId: event.pointerId,
@@ -629,7 +648,7 @@ const stopDrag = (event: PointerEvent) => {
     event.currentTarget.releasePointerCapture(event.pointerId)
   }
 
-  if (direction) emit('navigate', direction)
+  if (direction) navigatePhoto(direction)
 }
 
 // Photo Description
@@ -693,3 +712,43 @@ watch(
   }
 )
 </script>
+
+<style scoped>
+.photo-slide-next-enter-active,
+.photo-slide-next-leave-active,
+.photo-slide-prev-enter-active,
+.photo-slide-prev-leave-active {
+  transition:
+    transform 360ms ease-out,
+    opacity 360ms ease-out;
+}
+
+.photo-slide-next-enter-from {
+  opacity: 0;
+  transform: translateX(40px);
+}
+
+.photo-slide-next-leave-to {
+  opacity: 0;
+  transform: translateX(-40px);
+}
+
+.photo-slide-prev-enter-from {
+  opacity: 0;
+  transform: translateX(-40px);
+}
+
+.photo-slide-prev-leave-to {
+  opacity: 0;
+  transform: translateX(40px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .photo-slide-next-enter-active,
+  .photo-slide-next-leave-active,
+  .photo-slide-prev-enter-active,
+  .photo-slide-prev-leave-active {
+    transition: none;
+  }
+}
+</style>
