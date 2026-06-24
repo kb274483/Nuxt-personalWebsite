@@ -22,7 +22,7 @@
             :app="app"
           />
         </div>
-        <DesktopCat />
+        <LazyDesktopCat v-if="showCat" />
         <TransitionGroup name="window-pop">
           <Window
             v-for="window in store.windows"
@@ -54,12 +54,13 @@ import { useIsMobile } from '~/composables/useIsMobile'
 import Modal from '~/components/Modal.vue'
 import RightClickMenu from '~/components/apps/RightClickMenu.vue'
 import TextEditor from '~/components/apps/TextEditor.vue' 
-import DesktopCat from '~/components/DesktopCat.vue'
+// import DesktopCat from '~/components/DesktopCat.vue'
 
 // 狀態新增：目前的選單內容
 const currentMenuItems = ref<MenuItem[]>([])
 
 const { isMobile } = useIsMobile()
+const showCat = ref<boolean>(false)
 
 // 定義不同的選單設定
 const desktopMenu: MenuItem[] = [
@@ -199,10 +200,18 @@ const handleWindowResize = () => {
 
 onMounted(() => {
   useDesktopItemsManager().setupDesktopItems(createDefaultDesktopApps(isMobile.value))
-  usePhotoManager().initialize()
   window.addEventListener('contextmenu', handleContextMenu)
   window.addEventListener('click', closeRightClickMenu)
   window.addEventListener('resize', handleWindowResize)
+  
+  const showCatSwitch = ()=> showCat.value = true
+  if('requestIdleCallback' in window) {
+    window.requestIdleCallback(()=>{
+      showCatSwitch()
+      usePhotoManager().initialize()
+    },{timeout: 3000})
+    return
+  }
 })
 
 onBeforeUnmount(() => {

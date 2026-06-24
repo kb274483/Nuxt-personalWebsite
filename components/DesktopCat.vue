@@ -10,7 +10,6 @@
 import { useTemplateRef, onMounted, onBeforeUnmount, computed } from 'vue'
 import { ANIMATIONS } from '~/types/cat.type'
 import type { CatState, AnimConfig } from '~/types/cat.type'
-import { useHead } from '#imports'
 import { useIsMobile } from '~/composables/useIsMobile'
 import { useGravityManager } from '~/stores/gravityManager'
 
@@ -18,15 +17,7 @@ const { isMobile } = useIsMobile()
 // 重力模式管理
 const gravityManager = useGravityManager()
 
-// 預載入貓貓圖片
-useHead({
-  link: [
-    { rel: 'preload', as: 'image', href: '/cat_sprite_ban.webp' },
-    { rel: 'preload', as: 'image', href: '/cat_sprite_yahoo.webp' },
-    { rel: 'preload', as: 'image', href: '/cat_sprite_amei.webp' }
-  ]
-})
-
+// 常數
 const SPRITE_COLS = 6
 const SPRITE_ROWS = 6
 let FRAME_WIDTH = 128
@@ -102,11 +93,21 @@ const init = () => {
         FRAME_WIDTH = img.width / SPRITE_COLS
         FRAME_HEIGHT = img.height / SPRITE_ROWS
       }
-
-      const x = isMobile.value ? 50 + index * 100 : 150 + index * 180
       let cat: CatState
-      cat = createCat(index + 1, src.name, x, groundY, img as HTMLImageElement, ANIMATIONS.IDLE)
+
+      const startX = -320 - index * 80
+      const targetX = isMobile.value ? 50 + index * 100 : 150 + index * 180 
+      cat = createCat(
+        index + 1,
+        src.name,
+        startX,
+        groundY,
+        img as HTMLImageElement,
+        ANIMATIONS.IDLE
+      )
       cats.push(cat)
+      cat.targetX = targetX
+      cat.targetY = groundY
       
       if (!animationFrameId) {
         requestAnimationFrame(catLoop)
